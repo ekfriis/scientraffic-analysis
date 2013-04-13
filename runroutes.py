@@ -6,6 +6,7 @@ __license__ = None
 
 from concurrent import futures
 import functools
+import itertools
 import logging
 import optparse
 import sys
@@ -163,9 +164,10 @@ def main(argv, out=None, err=None):
         # Create output format
         class OSRMRouteStep(tables.IsDescription):
             route_idx = tables.UInt32Col()
-            idx_in_route = tables.UInt32Col()
-            node_id = tables.UInt32Col()
-            duration = tables.UInt32Col()
+            idx_in_route = tables.UInt16Col()
+            start_node = tables.UInt32Col()
+            end_node = tables.UInt32Col()
+            duration = tables.UInt16Col()
 
         group = outputfd.createGroup('/', 'routes', "OSRM routes")
         steps = outputfd.createTable(
@@ -186,11 +188,18 @@ def main(argv, out=None, err=None):
                 for route in executor.map(
                         route_runner,
                         generate_routes(opts.nroutes, nodetable)):
-                    for j, nodeid in enumerate(route['raw_data']):
+
+                    def get_pair_steps(x):
+                        """Generate iterator over each step in list"""
+                        return itertools.izip(x[:-1], x[1:])
+
+                    for j, (startn, endn) in enumerate(get_pair_steps(
+                            route['raw_data'])):
                         row['route_idx'] = route_count
                         row['idx_in_route'] = j
-                        row['node_id'] = nodeid[0]
-                        row['duration'] = nodeid[1]
+                        row['start_node'] = startn[0]
+                        row['end_node'] = endn[0]
+                        row['duration'] = startn[1]
                         row.append()
                     route_count += 1
     return 0
