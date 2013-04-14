@@ -75,7 +75,7 @@ def run_route(coords, host='localhost', port=5000):
         log.error("Route lookup with %s failed with %i.",
                   url, response.status_code)
         return None
-    return response.json()
+    return np.array(response.json()['raw_data'], dtype=int)
 
 
 def parseargs(argv):
@@ -193,8 +193,7 @@ def main(argv, out=None, err=None):
                         """Generate iterator over each step in list"""
                         return itertools.izip(x[:-1], x[1:])
 
-                    for j, (startn, endn) in enumerate(get_pair_steps(
-                            route['raw_data'])):
+                    for j, (startn, endn) in enumerate(get_pair_steps(route)):
                         row['route_idx'] = route_count
                         row['idx_in_route'] = j
                         row['start_node'] = startn[0]
