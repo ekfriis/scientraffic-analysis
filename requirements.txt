@@ -14,8 +14,17 @@ numpy==1.7.0
 Cython==0.18
 matplotlib==1.2.1
 ipython==0.13.1
+# for the ipython notebook
+pyzmq==13.0.2
+six==1.3.0
+tornado==3.0.1
+# for pytables
 numexpr==2.0.1
 tables==2.4.0
+# pandas
+pandas==0.10.1
+python-dateutil==2.1
+pytz==2013b
 
 # Shapes and friends.
 # You have to do some trickery for this GDAL.
@@ -26,4 +35,5 @@ descartes==1.0
 wsgiref==0.1.2
 
 # Not yet on PyPi
+# Have to install this manually, before others.
 #git+http://github.com/scipy/scipy/@v0.12.0b1
