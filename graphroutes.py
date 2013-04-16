@@ -5,7 +5,6 @@
 __license__ = None
 
 from collections import Counter
-from contextlib import closing
 import logging
 import math
 import optparse
