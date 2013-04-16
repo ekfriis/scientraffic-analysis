@@ -179,8 +179,8 @@ def main(argv, out=None, err=None):
             log.info("Detected %i nodes", nodetable.nrows)
 
             nthrds = opts.threads
-            log.info("Spawning %i compute threads", nthrds)
-            with futures.ThreadPoolExecutor(max_workers=nthrds) as executor:
+            log.info("Spawning %i compute processes", nthrds)
+            with futures.ProcessPoolExecutor(max_workers=nthrds) as executor:
                 route_runner = functools.partial(
                     run_route, host=opts.host, port=opts.port)
                 # execute some jobs
@@ -201,6 +201,10 @@ def main(argv, out=None, err=None):
                         row['duration'] = startn[1]
                         row.append()
                     route_count += 1
+                    # flush every 100 routes
+                    if route_count % 100 == 0:
+                        steps.flush()
+
     return 0
 
 if __name__ == "__main__":  # pragma: nocover

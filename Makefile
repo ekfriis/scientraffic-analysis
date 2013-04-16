@@ -16,12 +16,12 @@ la: $(LA_TARGETS)
 
 # Run a few toy routes
 %/routes.hdf5: %/graph.hdf5 runroutes.py
-	./runroutes.py --threads 2 -n 5000 -v -c 10.211.55.3 -p 8080 $< $@
+	./runroutes.py --threads 3 -n 50000 -v -c 10.211.55.3 -p 8080 $< $@
 
 # Find the most common intersections ued in the toy routes
 %/scoredroutes.hdf5: %/routes.hdf5 graphroutes.py
 	./graphroutes.py $< $@
 
 # Delaunuy triangulate the intersections and store them in a GeoJSON
-%/triangulated_intersections.json: %/scoredroutes.hdf5 triangulate.py
-	./triangulate.py $< $@ 
+%/triangulated_intersections.json: %/scoredroutes.hdf5 %/graph.hdf5 triangulate.py
+	./triangulate.py $*/scoredroutes.hdf5 $*/graph.hdf5 $@ 
