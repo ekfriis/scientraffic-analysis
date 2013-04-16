@@ -4,6 +4,7 @@
 """
 __license__ = None
 
+from collections import Counter
 from contextlib import closing
 import logging
 import math
@@ -12,7 +13,6 @@ import sys
 
 import igraph
 import numpy as np
-import pandas as pd
 import tables
 
 # NullHandler was added in Python 3.1.
@@ -69,40 +69,41 @@ def steplist_2_igraph(stepstore, take_fraction=0.1):
     the route step counts.
     :param take_fraction: what fraction of the steps to keep
     """
-    steps = stepstore['routes/steps']
+    # Get the HDF5 table
+    steps = stepstore.root.routes.steps
 
-    # group into individual edges
-    edge_groups = steps.groupby(['start_node', 'end_node'])
+    log.info("Grouping observed edges by start and end")
 
-    edge_counts = edge_groups.size()
+    edge_counts = Counter()
+    for row in steps.iterrows():
+        edge_counts[(row['start_node'], row['end_node'])] += 1
 
-    top_Npercent = edge_counts.order(
-        ascending=False)[:int(len(edge_counts) * take_fraction)]
+    top_n_percent = np.array(edge_counts.most_common(
+        int(len(edge_counts) * take_fraction)))
 
     # Find unique nodes
-    nodes = set()
-    for startn, endn in top_Npercent.index:
-        nodes.add(startn)
-        nodes.add(endn)
-    # Convert to a list
-    nodes = list(nodes)
+    nodes = {}
+    for (startn, endn), weight in top_n_percent:
+        nodes[startn] = -1
+        nodes[endn] = -1
 
     log.info("Found %i unique nodes", len(nodes))
 
     # Map them to consecutive integers
     # (the graph vertex ids)
-    node_2_idx = {}
-    for idx, nodeid in enumerate(nodes):
-        node_2_idx[nodeid] = idx
+    for idx, nodeid in enumerate(nodes.keys()):
+        nodes[nodeid] = idx
+
+    edges = []
+    edge_weights = []
+    for (start, end), weight in top_n_percent:
+        edges.append((nodes[start], nodes[end]))
+        edge_weights.append(weight)
+    del top_n_percent
 
     graph = igraph.Graph()
-    graph.add_vertices(len(node_2_idx))
-    graph.vs["id"] = nodes
-    del nodes
-
-    edges = [(node_2_idx[start], node_2_idx[end])
-             for start, end in top_Npercent.index]
-    edge_weights = list(top_Npercent)
+    graph.add_vertices(len(nodes))
+    graph.vs["id"] = nodes.keys()
 
     log.info("Adding %i edges", len(edges))
     graph.add_edges(edges)
@@ -174,8 +175,8 @@ def main(argv, out=None, err=None):
 
     input_file, output_file = args[0], args[1]
 
-    with closing(pd.HDFStore(input_file, 'r')) as store:
-        g = steplist_2_igraph(store, take_fraction=1.0)
+    with tables.openFile(input_file, 'r') as store:
+        g = steplist_2_igraph(store, take_fraction=0.25)
 
     intersection_vertices = g.vs.select(_degree_gt=2)
     log.info("Found %i intersection vertices", len(intersection_vertices))
