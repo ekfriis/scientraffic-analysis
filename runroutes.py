@@ -168,8 +168,8 @@ def main(argv, out=None, err=None):
             start_node = tables.UInt32Col()
             end_node = tables.UInt32Col()
             duration = tables.UInt16Col()
-            start_lat = tables.UInt32Col()
-            start_lon = tables.UInt32Col()
+            start_lat = tables.Int32Col()
+            start_lon = tables.Int32Col()
 
         group = outputfd.createGroup('/', 'routes', "OSRM routes")
         steps = outputfd.createTable(
