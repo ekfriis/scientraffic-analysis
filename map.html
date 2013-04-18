@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>tile.stamen.com: Leaflet</title>
+        <script type="text/javascript" src="http://leaflet.cloudmade.com/dist/leaflet.js"></script>
+        <link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.css" />
+        <!--[if lte IE 8]><link rel="stylesheet" href="http://leaflet.cloudmade.com/dist/leaflet.ie.css" /><![endif]-->
+
+        <script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.2.0"></script>
+        <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <script type="text/javascript">
+            function initialize() {
+              var map = new L.Map("toner", {
+                center: new L.LatLng(34, -118),
+                zoom: 10
+              });
+              map.addLayer(new L.StamenTileLayer("toner"));
+              $.getJSON("lax/intersections.json", function(data) {
+                //When GeoJSON is loaded
+                console.log("got data " + data['features'].length);
+                var filteredFeatures = data['features'].filter(function(d) {
+                  return d['properties']['score'] > 15;
+                });
+                console.log(filteredFeatures.length);
+                data['features'] = filteredFeatures;
+
+                var geojsonLayer = new L.GeoJSON(data);               //New GeoJSON layer
+                console.log("made layer");
+                map.addLayer(geojsonLayer);                   //Add layer to map      
+                console.log("added layer");
+              });
+            }
+        </script>
+        <style type="text/css">
+            .map {
+                width: 600px;
+                height: 320px;
+                margin: 0 0 1em 0;
+            }
+        </style>
+    </head>
+    <body onload="initialize()">
+        <div id="toner" class="map"></div>
+    </body>
+</html>
