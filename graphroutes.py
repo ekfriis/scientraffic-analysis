@@ -10,6 +10,7 @@ import math
 import optparse
 import sys
 
+import geojson
 import igraph
 import numpy as np
 import tables
@@ -84,12 +85,14 @@ def steplist_2_igraph(stepstore, take_fraction=0.1):
             lon = row['start_lon']
             node_2_latlon[start_node] = (lat, lon)
 
-    top_n_percent = np.array(edge_counts.most_common(
-        int(len(edge_counts) * take_fraction)))
+    top_n_percent = np.array([
+        (s, e, w) for (s, e), w in
+        edge_counts.most_common(int(len(edge_counts) * take_fraction))
+    ], dtype=int)
 
     # Find unique nodes
     nodes = {}
-    for (startn, endn), weight in top_n_percent:
+    for startn, endn, weight in top_n_percent:
         nodes[startn] = -1
         nodes[endn] = -1
 
@@ -102,7 +105,7 @@ def steplist_2_igraph(stepstore, take_fraction=0.1):
 
     edges = []
     edge_weights = []
-    for (start, end), weight in top_n_percent:
+    for start, end, weight in top_n_percent:
         edges.append((nodes[start], nodes[end]))
         edge_weights.append(weight)
     del top_n_percent
@@ -199,27 +202,25 @@ def main(argv, out=None, err=None):
     vtx_order = np.argsort(vtx_scores)
 
     log.info("Opening output file %s", output_file)
-    with tables.File(output_file, mode='w') as outputfd:
+    output = []
+    for vtx_idx in vtx_order:
+        vtx = intersection_vertices[int(vtx_idx)]
+        node = geojson.Feature(
+            id=vtx['id'],
+            geometry=geojson.Point((
+                vtx['lon']/1E5,
+                vtx['lat']/1E5
+            )),
+            properties={
+                'score': vtx_scores[vtx_idx]
+            })
+        output.append(node)
 
-        # Define output format & location
-        class NodeWeight(tables.IsDescription):
-            id = tables.UInt32Col()
-            score = tables.FloatCol()
-            lat = tables.Int32Col()
-            lon = tables.Int32Col()
-
-        group = outputfd.createGroup('/', 'osrm', "OSRM routes")
-        weights = outputfd.createTable(
-            group, 'nodeweights', NodeWeight, "Steps")
-        row = weights.row
-
-        for vtx_idx in vtx_order:
-            vtx = intersection_vertices[int(vtx_idx)]
-            row['id'] = vtx['id']
-            row['lat'] = vtx['lat']
-            row['lon'] = vtx['lon']
-            row['score'] = vtx_scores[vtx_idx]
-            row.append()
+    with open(output_file, 'w') as outputfd:
+        geojson.dump(
+            geojson.FeatureCollection(output),
+            outputfd, indent=1
+        )
 
     return 0
 
