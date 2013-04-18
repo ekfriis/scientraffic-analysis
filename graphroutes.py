@@ -73,9 +73,16 @@ def steplist_2_igraph(stepstore, take_fraction=0.1):
 
     log.info("Grouping observed edges by start and end")
 
+    node_2_latlon = {}
+
     edge_counts = Counter()
     for row in steps.iterrows():
-        edge_counts[(row['start_node'], row['end_node'])] += 1
+        start_node = int(row['start_node'])
+        edge_counts[(start_node, int(row['end_node']))] += 1
+        if start_node not in node_2_latlon:
+            lat = row['start_lat']
+            lon = row['start_lon']
+            node_2_latlon[start_node] = (lat, lon)
 
     top_n_percent = np.array(edge_counts.most_common(
         int(len(edge_counts) * take_fraction)))
@@ -103,6 +110,8 @@ def steplist_2_igraph(stepstore, take_fraction=0.1):
     graph = igraph.Graph()
     graph.add_vertices(len(nodes))
     graph.vs["id"] = nodes.keys()
+    graph.vs["lat"] = [node_2_latlon[id][0] for id in nodes.keys()]
+    graph.vs["lon"] = [node_2_latlon[id][1] for id in nodes.keys()]
 
     log.info("Adding %i edges", len(edges))
     graph.add_edges(edges)
@@ -196,6 +205,8 @@ def main(argv, out=None, err=None):
         class NodeWeight(tables.IsDescription):
             id = tables.UInt32Col()
             score = tables.FloatCol()
+            lat = tables.Int32Col()
+            lon = tables.Int32Col()
 
         group = outputfd.createGroup('/', 'osrm', "OSRM routes")
         weights = outputfd.createTable(
@@ -203,7 +214,10 @@ def main(argv, out=None, err=None):
         row = weights.row
 
         for vtx_idx in vtx_order:
-            row['id'] = intersection_vertices[int(vtx_idx)]['id']
+            vtx = intersection_vertices[int(vtx_idx)]
+            row['id'] = vtx['id']
+            row['lat'] = vtx['lat']
+            row['lon'] = vtx['lon']
             row['score'] = vtx_scores[vtx_idx]
             row.append()
 
