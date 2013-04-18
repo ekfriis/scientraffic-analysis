@@ -168,6 +168,8 @@ def main(argv, out=None, err=None):
             start_node = tables.UInt32Col()
             end_node = tables.UInt32Col()
             duration = tables.UInt16Col()
+            start_lat = tables.UInt32Col()
+            start_lon = tables.UInt32Col()
 
         group = outputfd.createGroup('/', 'routes', "OSRM routes")
         steps = outputfd.createTable(
@@ -185,24 +187,32 @@ def main(argv, out=None, err=None):
                     run_route, host=opts.host, port=opts.port)
                 # execute some jobs
                 route_count = 0
-                for route in executor.map(
-                        route_runner,
-                        generate_routes(opts.nroutes, nodetable)):
+                # Do the future mapping in chunks, to prevent memory
+                # blowup.  I don't understand why the executor keeps
+                # so much crap around.
+                nchunks = opts.nroutes / 1000
+                for ichunk in range(nchunks):
+                    log.info("Processing 1k route block %i/%i",
+                             ichunk + 1, nchunks)
+                    for route in executor.map(
+                            route_runner,
+                            generate_routes(1000, nodetable)):
 
-                    def get_pair_steps(x):
-                        """Generate iterator over each step in list"""
-                        return itertools.izip(x[:-1], x[1:])
+                        def get_pair_steps(x):
+                            """Generate iterator over each step in list"""
+                            return itertools.izip(x[:-1], x[1:])
 
-                    for j, (startn, endn) in enumerate(get_pair_steps(route)):
-                        row['route_idx'] = route_count
-                        row['idx_in_route'] = j
-                        row['start_node'] = startn[0]
-                        row['end_node'] = endn[0]
-                        row['duration'] = startn[1]
-                        row.append()
-                    route_count += 1
-                    # flush every 100 routes
-                    if route_count % 100 == 0:
+                        for j, (startn, endn) in enumerate(
+                                get_pair_steps(route)):
+                            row['route_idx'] = route_count
+                            row['idx_in_route'] = j
+                            row['start_node'] = startn[0]
+                            row['end_node'] = endn[0]
+                            row['duration'] = startn[1]
+                            row['start_lat'] = startn[2]
+                            row['start_lon'] = startn[3]
+                            row.append()
+                        route_count += 1
                         steps.flush()
 
     return 0
