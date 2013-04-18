@@ -4,7 +4,7 @@
 # Output target template
 OUTPUT=CITY/graph.hdf5\
        CITY/routes.hdf5\
-       CITY/scoredroutes.hdf5
+       CITY/intersections.json
 
 LA_TARGETS=$(subst CITY,lax,$(OUTPUT))
 
@@ -19,8 +19,8 @@ la: $(LA_TARGETS)
 	./runroutes.py --threads 3 -n 50000 -v -c 10.211.55.3 -p 8080 $< $@
 
 # Find the most common intersections ued in the toy routes
-%/scoredroutes.hdf5: %/routes.hdf5 graphroutes.py
-	./graphroutes.py $< $@
+%/intersections.json: %/routes.hdf5 graphroutes.py
+	./graphroutes.py -v $< $@
 
 # Delaunuy triangulate the intersections and store them in a GeoJSON
 %/triangulated_intersections.json: %/scoredroutes.hdf5 %/graph.hdf5 triangulate.py
