@@ -81,8 +81,8 @@ def steplist_2_igraph(stepstore, take_fraction=0.1):
         start_node = int(row['start_node'])
         edge_counts[(start_node, int(row['end_node']))] += 1
         if start_node not in node_2_latlon:
-            lat = row['start_lat']
-            lon = row['start_lon']
+            lat = row['start_lat']/1E5
+            lon = row['start_lon']/1E5
             node_2_latlon[start_node] = (lat, lon)
 
     top_n_percent = np.array([
@@ -188,6 +188,7 @@ def main(argv, out=None, err=None):
 
     with tables.openFile(input_file, 'r') as store:
         g = steplist_2_igraph(store, take_fraction=0.25)
+        g.write("mygraph.graphml")
 
     intersection_vertices = g.vs.select(_degree_gt=2)
     log.info("Found %i intersection vertices", len(intersection_vertices))
@@ -208,8 +209,8 @@ def main(argv, out=None, err=None):
         node = geojson.Feature(
             id=vtx['id'],
             geometry=geojson.Point((
-                vtx['lon']/1E5,
-                vtx['lat']/1E5
+                vtx['lon'],
+                vtx['lat']
             )),
             properties={
                 'score': vtx_scores[vtx_idx]
