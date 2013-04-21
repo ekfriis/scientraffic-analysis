@@ -4,8 +4,8 @@
 """
 __license__ = None
 
+import argparse
 import logging
-import optparse
 import sys
 
 import tables
@@ -38,8 +38,7 @@ def parseargs(argv):
     .osrm file and output .hdf5 file containing the routes.
     """
     prog = argv[0]
-    parser = optparse.OptionParser(prog=prog)
-    parser.allow_interspersed_args = False
+    parser = argparse.ArgumentParser(prog=prog)
 
     defaults = {
         "quiet": 0,
@@ -48,22 +47,25 @@ def parseargs(argv):
         "take": 1000,
     }
 
-    # Global options.
-    parser.add_option("-q", "--quiet", dest="quiet",
-                      default=defaults["quiet"], action="count",
-                      help="decrease the logging verbosity")
-    parser.add_option("-s", "--silent", dest="silent",
-                      default=defaults["silent"], action="store_true",
-                      help="silence the logger")
-    parser.add_option("-v", "--verbose", dest="verbose",
-                      default=defaults["verbose"], action="count",
-                      help="increase the logging verbosity")
-    parser.add_option("-n", "--take", dest="take",
-                      default=defaults["take"], type=int,
-                      help="Number of final nodes to create")
+    parser.add_argument("input", metavar="scoredroutes.hdf5",
+                        help="input file")
+    parser.add_argument("output", metavar="triangulation.json",
+                        help="output GeoJSON file")
+    parser.add_argument("-q", "--quiet", dest="quiet",
+                        default=defaults["quiet"], action="count",
+                        help="decrease the logging verbosity")
+    parser.add_argument("-s", "--silent", dest="silent",
+                        default=defaults["silent"], action="store_true",
+                        help="silence the logger")
+    parser.add_argument("-v", "--verbose", dest="verbose",
+                        default=defaults["verbose"], action="count",
+                        help="increase the logging verbosity")
+    parser.add_argument("-n", "--take", dest="take",
+                        default=defaults["take"], type=int,
+                        help="Number of final nodes to create")
 
-    (opts, args) = parser.parse_args(args=argv[1:])
-    return (opts, args)
+    args = parser.parse_args(args=argv[1:])
+    return args
 
 
 def main(argv, out=None, err=None):
@@ -79,9 +81,9 @@ def main(argv, out=None, err=None):
         out = sys.stdout
     if err is None:  # pragma: nocover
         err = sys.stderr
-    (opts, args) = parseargs(argv)
-    level = logging.WARNING - ((opts.verbose - opts.quiet) * 10)
-    if opts.silent:
+    args = parseargs(argv)
+    level = logging.WARNING - ((args.verbose - args.quiet) * 10)
+    if args.silent:
         level = logging.CRITICAL + 1
 
     format = "%(message)s"
@@ -90,43 +92,26 @@ def main(argv, out=None, err=None):
     log.addHandler(handler)
     log.setLevel(level)
 
-    if len(args) != 3:
-        log.error("You must specify an [input] and [output] file")
-        return 1
+    node_list = []
 
-    input_file, node_info, output_file = args[0], args[1], args[2]
-
-    nodes = {}
-
-    with tables.openFile(input_file, 'r') as store:
-        ranking = store.root.osrm.nodewights
-        for id in ranking.id[:min(args.take, ranking.nrows)]:
-            nodes[id] = {}
-
-    # Get the lat/lon and other meta data
-    with tables.openFile(node_info, 'r') as store:
-        node_info = store.root.osrm.nodes
-        for node in nodes.keys():
-            node_rows = node_info.getWhereList("id == %i" % node)
-            if len(node_rows) != 1:
-                log.error("Found wrong number of rows %i for node %i",
-                          len(node_rows), node)
-                continue
-            lat = node_info[node_rows[0]]['lat']
-            lon = node_info[node_rows[0]]['lon']
-            nodes[node] = {
-                'lat': lat,
-                'lon': lon,
-            }
+    with tables.openFile(args.input, 'r') as store:
+        ranking = store.root.osrm.nodeweights
+        for row in ranking.iterrows():
+            if len(node_list) == args.take:
+                break
+            node_list.append([
+                row['id'],
+                row['lat'],
+                row['lon']
+            ])
 
     # Now, let's triangulate the points.
-    node_list = np.ndarray(
-        [[id, v['lat'], v['lon']] for id, v in nodes.iteritems()], dtype=int)
-    import pdb
-    pdb.set_trace()
+    node_list = np.array(node_list, dtype=int)
 
+    log.info("Triangulating %i nodes
 
     return 0
 
 if __name__ == "__main__":  # pragma: nocover
     sys.exit(main(sys.argv))
+
