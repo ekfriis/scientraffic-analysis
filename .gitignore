@@ -1,5 +1,6 @@
 # virtual env
 venv/
+*.graphml
 
 *.py[cod]
 
