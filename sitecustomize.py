@@ -17,5 +17,5 @@ def info(type, value, tb):
         # ...then start the debugger in post-mortem mode.
         pdb.pm()
 
-if not os.environ.get("PDB_ON_EXCEPT", False):
+if os.environ.get("PDB_ON_EXCEPT", False):
     sys.excepthook = info
