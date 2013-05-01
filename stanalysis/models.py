@@ -31,7 +31,7 @@ class OSRMNode(Base):
         self.osm_id = osm_id
         self.lat = lat
         self.lon = lon
-        self.bolalrd = bollard
+        self.bollard = bollard
         self.traffic_light = traffic_light
         self.geom = WKTSpatialElement(
             "POINT(%0.2f %0.2f)" % (lon/1E5, lat/1E5))
