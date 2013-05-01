@@ -5,7 +5,7 @@ GeoAlchemy PostGIS models
 
 """
 
-from geoalchemy import GeometryColumn, Point
+from geoalchemy import GeometryColumn, Point, WKTSpatialElement
 from geoalchemy.postgis import PGComparator
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, Boolean, ForeignKey
@@ -24,7 +24,8 @@ class OSRMNode(Base):
     traffic_light = Column(Boolean)
     geom = GeometryColumn(Point(2), comparator=PGComparator)
     # Edges associated to this node
-    edges = relationship("OSRMEdge")
+    #in_edges = relationship("OSRMEdge", foreign_keys=['osrmedges.sink'])
+    #out_edges = relationship("OSRMEdge", foreign_keys=['osrmedges.source'])
 
     def __init__(self, osm_id, lat, lon, bollard, traffic_light):
         self.osm_id = osm_id
@@ -32,23 +33,28 @@ class OSRMNode(Base):
         self.lon = lon
         self.bolalrd = bollard
         self.traffic_light = traffic_light
-        self.geom = Point(lon/1E5, lat/1E5)
+        self.geom = WKTSpatialElement(
+            "POINT(%0.2f %0.2f)" % (lon/1E5, lat/1E5))
 
 
 class OSRMEdge(Base):
     __tablename__ = "osrmedges"
 
     id = Column(Integer, primary_key=True)
-    node_a = Column(Integer, ForeignKey('osrmnodes.osm_id'))
-    node_b = Column(Integer, ForeignKey('osrmnodes.osm_id'))
+    source = Column(Integer, ForeignKey('osrmnodes.osm_id'))
+    sink = Column(Integer, ForeignKey('osrmnodes.osm_id'))
+    source_node = relationship(
+        "OSRMNode", primaryjoin="OSRMNode.osm_id==OSRMEdge.source")
+    sink_node = relationship(
+        "OSRMNode", primaryjoin="OSRMNode.osm_id==OSRMEdge.sink")
     distance = Column(Integer)
     weight = Column(Integer)
     bidirectional = Column(Boolean)
 
-    def __init__(self, id, node_a, node_b, distance, weight, bidirectional):
+    def __init__(self, id, source, sink, distance, weight, bidirectional):
         self.id = id
-        self.node_a = node_a
-        self.node_b = node_b
+        self.source = source
+        self.sink = sink
         self.distance = distance
         self.weight = weight
         self.bidirectional = bidirectional

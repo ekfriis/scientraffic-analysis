@@ -15,6 +15,9 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 def create_tables():
-    """Drop existing test tables and create new ones"""
-    Base.metadata.drop_all(engine)
+    """Create test tables"""
     Base.metadata.create_all(engine)
+
+def drop_tables():
+    """Drop existing test tables"""
+    Base.metadata.drop_all(engine)
