@@ -12,7 +12,7 @@ from stanalysis.models import OSRMEdge, OSRMNode, Base  # flake8: noqa
 
 engine = create_engine('postgresql://osm:osm@localhost/osm_test', echo=True)
 Session = sessionmaker(bind=engine)
-session = Session()
+#session = Session()
 
 def create_tables():
     """Create test tables"""

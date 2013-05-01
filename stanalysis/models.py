@@ -43,10 +43,8 @@ class OSRMEdge(Base):
     id = Column(Integer, primary_key=True)
     source = Column(Integer, ForeignKey('osrmnodes.osm_id'))
     sink = Column(Integer, ForeignKey('osrmnodes.osm_id'))
-    source_node = relationship(
-        "OSRMNode", primaryjoin="OSRMNode.osm_id==OSRMEdge.source")
-    sink_node = relationship(
-        "OSRMNode", primaryjoin="OSRMNode.osm_id==OSRMEdge.sink")
+    source_node = relationship("OSRMNode", foreign_keys="OSRMEdge.source")
+    sink_node = relationship("OSRMNode", foreign_keys="OSRMEdge.sink")
     distance = Column(Integer)
     weight = Column(Integer)
     bidirectional = Column(Boolean)
