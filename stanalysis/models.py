@@ -5,7 +5,7 @@ GeoAlchemy PostGIS models
 
 """
 
-from geoalchemy import GeometryColumn, Point, WKTSpatialElement
+from geoalchemy import GeometryColumn, Point, WKTSpatialElement, GeometryDDL
 from geoalchemy.postgis import PGComparator
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, Boolean, ForeignKey
@@ -58,3 +58,6 @@ class OSRMEdge(Base):
         self.distance = distance
         self.weight = weight
         self.bidirectional = bidirectional
+
+GeometryDDL(OSRMNode.__table__)
+GeometryDDL(OSRMEdge.__table__)
