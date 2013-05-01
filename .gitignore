@@ -2,6 +2,9 @@
 venv/
 *.graphml
 
+# Results Direcotries
+lax/
+
 *.py[cod]
 
 # C extensions
