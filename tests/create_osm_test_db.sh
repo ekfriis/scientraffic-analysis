@@ -1,5 +1,5 @@
 #!/bin/bash
-createdb -E UNICODE osm_test
+createdb -E UNICODE -O osm osm_test
 createlang plpgsql osm_test
 psql -d osm_test -f /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
 psql -d osm_test -f /usr/share/postgresql/9.1/contrib/postgis-1.5/spatial_ref_sys.sql
