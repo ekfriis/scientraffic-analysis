@@ -107,6 +107,7 @@ def test_insert_osrm_routestep():
     eq_(result[0].nsteps, 7)
     eq_(len(result[0].steps), 2)
     eq_(result[0].steps[1].end_lon, 3)
+    eq_(result[0].steps[1].route.duration, 6)
     session.close()
     drop_tables()
 
