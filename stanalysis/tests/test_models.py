@@ -55,7 +55,7 @@ def test_insert_edge():
     node2 = OSRMNode(2, 3, 4, False, False)
     session.add(node1)
     session.add(node2)
-    the_edge = OSRMEdge(10, 1, 2, 5, 5, False)
+    the_edge = OSRMEdge(1, 2, 5, 5, False)
     session.add(the_edge)
     session.commit()
     result = session.query(OSRMEdge).join(OSRMEdge.source_node).\

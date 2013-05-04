@@ -40,17 +40,15 @@ class OSRMNode(Base):
 class OSRMEdge(Base):
     __tablename__ = "osrmedges"
 
-    id = Column(Integer, primary_key=True)
-    source = Column(Integer, ForeignKey('osrmnodes.osm_id'))
-    sink = Column(Integer, ForeignKey('osrmnodes.osm_id'))
+    source = Column(Integer, ForeignKey('osrmnodes.osm_id'), primary_key=True)
+    sink = Column(Integer, ForeignKey('osrmnodes.osm_id'), primary_key=True)
     source_node = relationship("OSRMNode", foreign_keys="OSRMEdge.source")
     sink_node = relationship("OSRMNode", foreign_keys="OSRMEdge.sink")
     distance = Column(Integer)
     weight = Column(Integer)
     bidirectional = Column(Boolean)
 
-    def __init__(self, id, source, sink, distance, weight, bidirectional):
-        self.id = id
+    def __init__(self, source, sink, distance, weight, bidirectional):
         self.source = source
         self.sink = sink
         self.distance = distance
