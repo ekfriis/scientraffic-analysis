@@ -15,6 +15,7 @@ Base = declarative_base()
 
 
 class OSRMNode(Base):
+    """Define a node in the routing network"""
     __tablename__ = "osrmnodes"
 
     osm_id = Column(Integer, primary_key=True)
@@ -38,22 +39,51 @@ class OSRMNode(Base):
 
 
 class OSRMEdge(Base):
+    """Define a edge between 2 nodes in the routing network"""
     __tablename__ = "osrmedges"
 
     source = Column(Integer, ForeignKey('osrmnodes.osm_id'), primary_key=True)
     sink = Column(Integer, ForeignKey('osrmnodes.osm_id'), primary_key=True)
+    name_id = Column(Integer, primary_key=True)
     source_node = relationship("OSRMNode", foreign_keys="OSRMEdge.source")
     sink_node = relationship("OSRMNode", foreign_keys="OSRMEdge.sink")
     distance = Column(Integer)
     weight = Column(Integer)
     bidirectional = Column(Boolean)
 
-    def __init__(self, source, sink, distance, weight, bidirectional):
+    def __init__(self, source, sink, distance, weight, bidirectional, name_id):
         self.source = source
         self.sink = sink
         self.distance = distance
         self.weight = weight
         self.bidirectional = bool(bidirectional)
+        self.name_id = name_id
+
+
+class OSRMRoute(Base):
+    """Definte a toy, random route, run using the OSRM engine"""
+    __tablename__ = "osrmroute"
+
+    route_hash = Column(Integer, primary_key=True)
+    start_lat = Column(Integer)
+    start_lon = Column(Integer)
+    end_lat = Column(Integer)
+    end_lon = Column(Integer)
+    duration = Column(Integer)
+    nsteps = Column(Integer)
+
+
+class OSRMRouteStep(Base):
+    __tablename__ = "osrmroutestep"
+    route_hash = Column(Integer, ForeignKey('osrmroute.route_hash'),
+                        primary_key=True)
+    route = relationship('OSRMRoute')
+    step_idx = Column(Integer, primary_key=True)
+    start_lat = Column(Integer)
+    start_lon = Column(Integer)
+    end_lat = Column(Integer)
+    end_lon = Column(Integer)
+
 
 GeometryDDL(OSRMNode.__table__)
 GeometryDDL(OSRMEdge.__table__)

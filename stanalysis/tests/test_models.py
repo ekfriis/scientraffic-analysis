@@ -55,7 +55,7 @@ def test_insert_edge():
     node2 = OSRMNode(2, 3, 4, False, False)
     session.add(node1)
     session.add(node2)
-    the_edge = OSRMEdge(1, 2, 5, 5, False)
+    the_edge = OSRMEdge(1, 2, 5, 5, False, 3)
     session.add(the_edge)
     session.commit()
     result = session.query(OSRMEdge).join(OSRMEdge.source_node).\
@@ -63,6 +63,7 @@ def test_insert_edge():
     eq_(len(result), 1)
     eq_(result[0].source_node.lon, 2)
     eq_(result[0].source_node.bollard, True)
+    eq_(result[0].name_id, 3)
     session.commit()
     session.close()
     drop_tables()
