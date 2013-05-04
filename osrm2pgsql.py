@@ -40,6 +40,7 @@ def upload_osrm_binary(binaryfd, dbsession, merge=False, commit_every=1000):
     log.info("Added %i nodes", nodes_added)
 
     log.info("Loading OSRM edge data")
+    existing_edges = set()
     edges_added = 0
     for edge in unpack_osrm_edges(binaryfd):
         ormified = OSRMEdge(
@@ -47,8 +48,15 @@ def upload_osrm_binary(binaryfd, dbsession, merge=False, commit_every=1000):
             edge.node_b,
             edge.distance,
             edge.weight,
-            edge.bidirectional
+            edge.bidirectional,
+            edge.name_id
         )
+        # make sure we don't j
+        key = hash((edge.node_a, edge.node_b, edge.name_id))
+        if key in existing_edges:
+            log.warning("Skipping existing edge: %s", repr(edge))
+            continue
+        existing_edges.add(key)
         insert_method(ormified)
         edges_added += 1
         if edges_added % commit_every == 0:
