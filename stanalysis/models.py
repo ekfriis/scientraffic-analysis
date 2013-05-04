@@ -77,7 +77,7 @@ class OSRMRouteStep(Base):
     __tablename__ = "osrmroutestep"
     route_hash = Column(Integer, ForeignKey('osrmroute.route_hash'),
                         primary_key=True)
-    route = relationship('OSRMRoute')
+    route = relationship('OSRMRoute', backref='steps')
     step_idx = Column(Integer, primary_key=True)
     start_lat = Column(Integer)
     start_lon = Column(Integer)

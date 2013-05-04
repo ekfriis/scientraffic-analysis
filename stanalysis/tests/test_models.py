@@ -16,7 +16,7 @@ def eq_(a, b):
 
 from geoalchemy import WKTSpatialElement
 from stanalysis.tests.mockdb import create_tables, drop_tables, Session
-from stanalysis.models import OSRMNode, OSRMEdge
+from stanalysis.models import OSRMNode, OSRMEdge, OSRMRoute, OSRMRouteStep
 
 
 def test_insert_node():
@@ -68,6 +68,48 @@ def test_insert_edge():
     session.close()
     drop_tables()
 
+
+def test_insert_osrm_route():
+    drop_tables()
+    create_tables()
+    session = Session()
+    route = OSRMRoute(route_hash=1, start_lat=2, start_lon=3,
+                      end_lat=4, end_lon=5, duration=6, nsteps=7)
+    session.add(route)
+    session.commit()
+    result = session.query(OSRMRoute).filter(OSRMRoute.route_hash == 2).all()
+    eq_(len(result), 0)
+    result = session.query(OSRMRoute).filter(OSRMRoute.route_hash == 1).all()
+    eq_(len(result), 1)
+    eq_(result[0].start_lat, 2)
+    eq_(result[0].nsteps, 7)
+    session.close()
+    drop_tables()
+
+
+def test_insert_osrm_routestep():
+    drop_tables()
+    create_tables()
+    session = Session()
+    route = OSRMRoute(route_hash=1, start_lat=2, start_lon=3,
+                      end_lat=4, end_lon=5, duration=6, nsteps=7)
+    session.add(route)
+    step1 = OSRMRouteStep(route_hash=1, step_idx=0,
+                          start_lat=1, start_lon=2, end_lat=2, end_lon=3)
+    step2 = OSRMRouteStep(route_hash=1, step_idx=1,
+                          start_lat=1, start_lon=2, end_lat=2, end_lon=3)
+    session.add(step1)
+    session.add(step2)
+    session.commit()
+    result = session.query(OSRMRoute).filter(OSRMRoute.route_hash == 1).all()
+    eq_(len(result), 1)
+    eq_(result[0].start_lat, 2)
+    eq_(result[0].nsteps, 7)
+    eq_(len(result[0].steps), 2)
+    eq_(result[0].steps[1].end_lon, 3)
+    session.close()
+    drop_tables()
+
 if __name__ == "__main__":
     test_insert_node()
-    #test_insert_edge()
+    test_insert_edge()
