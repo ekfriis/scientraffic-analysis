@@ -34,7 +34,7 @@ class OSRMNode(Base):
         self.bollard = bool(bollard)
         self.traffic_light = bool(traffic_light)
         self.geom = WKTSpatialElement(
-            "POINT(%0.2f %0.2f)" % (lon/1E5, lat/1E5))
+            "POINT(%0.6f %0.6f)" % (lon/1E5, lat/1E5))
 
 
 class OSRMEdge(Base):
