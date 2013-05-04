@@ -31,8 +31,8 @@ class OSRMNode(Base):
         self.osm_id = osm_id
         self.lat = lat
         self.lon = lon
-        self.bollard = bollard
-        self.traffic_light = traffic_light
+        self.bollard = bool(bollard)
+        self.traffic_light = bool(traffic_light)
         self.geom = WKTSpatialElement(
             "POINT(%0.2f %0.2f)" % (lon/1E5, lat/1E5))
 
@@ -55,7 +55,7 @@ class OSRMEdge(Base):
         self.sink = sink
         self.distance = distance
         self.weight = weight
-        self.bidirectional = bidirectional
+        self.bidirectional = bool(bidirectional)
 
 GeometryDDL(OSRMNode.__table__)
 GeometryDDL(OSRMEdge.__table__)
