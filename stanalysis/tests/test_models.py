@@ -5,13 +5,8 @@ Test the OSRM GeoAlchemy models.
 '''
 
 import logging
+from nose.tools import eq_
 logging.basicConfig(level=logging.WARNING)
-
-
-#from nose.tools import eq_
-def eq_(a, b):
-    if a != b:
-        raise AssertionError("%s != %s" % (a, b))
 
 
 from geoalchemy import WKTSpatialElement
