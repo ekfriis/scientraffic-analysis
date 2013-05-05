@@ -4,218 +4,147 @@
 """
 __license__ = None
 
+import argparse
 from concurrent import futures
 import functools
 import itertools
 import logging
-import optparse
-import sys
+import math
 
-import numpy as np
-import requests
-import tables
+import numpy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-# NullHandler was added in Python 3.1.
-try:
-    NullHandler = logging.NullHandler
-except AttributeError:
-    class NullHandler(logging.Handler):
-        def emit(self, record):
-            pass
+import stanalysis.routerunner as rr
+import stanalysis.models as models
 
-# Add a do-nothing NullHandler to the module logger to prevent "No handlers
-# could be found" errors. The calling code can still add other, more useful
-# handlers, or otherwise configure logging.
 log = logging.getLogger(__name__)
-log.addHandler(NullHandler())
 
-
-def generate_routes(N, nodetable):
-    """Generate start and end nodes for trips
-
-    Generates pairs of (lat, lon) tuples corresponding to the
-    start and end points for the route.
-
-    :param N: number of trips to generate
-    :param node_set: a :class:`tables.Table` containing OSRM nodes
-
-    TODO: make this prefer short distances
-    """
-    for _ in range(N):
-        start_row_idx = np.random.randint(0, nodetable.nrows-1)
-        end_row_idx = np.random.randint(0, nodetable.nrows-1)
-        start_row = nodetable[start_row_idx]
-        end_row = nodetable[end_row_idx]
-        yield ((start_row['lat'], start_row['lon']),
-               (end_row['lat'], end_row['lon']))
-
-
-def run_route(coords, host='localhost', port=5000):
-    """Query an OSRM server for a route
-
-    Returns the (decoded) JSON `output from OSRM`_.
-
-    .. _output from OSRM: https://github.com/DennisOSRM/
-        Project-OSRM/wiki/Output-json
-
-    :param coords: 2-tuple of starting & ending (lat, lon)
-    """
-    startpt, endpt = coords
-
-    # we can't uses the requests params feature, since it
-    # will escape the commas.
-    url = 'http://{host}:{port}/viaroute?loc={loc1}'\
-        '&loc={loc2}&instructions=false&raw=true'.format(
-            host=host, port=port,
-            loc1=','.join(str(x / 100000.) for x in startpt),
-            loc2=','.join(str(x / 100000.) for x in endpt),
-        )
-    response = requests.get(url)
-    if response.status_code != 200:
-        log.error("Route lookup with %s failed with %i.",
-                  url, response.status_code)
-        return None
-    return np.array(response.json()['raw_data'], dtype=int)
-
-
-def parseargs(argv):
-    """Parse command line arguments.
-
-    :param argv: a list of command line arguments, usually :data:`sys.argv`.
-
-    Valid options are related to the desired verbosity.
-    There should be two additional left over arguments, the input
-    .osrm file and output .hdf5 file containing the routes.
-    """
-    prog = argv[0]
-    parser = optparse.OptionParser(prog=prog)
-    parser.allow_interspersed_args = False
-
-    defaults = {
-        "quiet": 0,
-        "silent": False,
-        "verbose": 0,
-        "threads": 2,
-        "nroutes": 1000,
-        "host": 'localhost',
-        "port": '5000',
-    }
-
-    # Global options.
-    parser.add_option("-q", "--quiet", dest="quiet",
-                      default=defaults["quiet"], action="count",
-                      help="decrease the logging verbosity")
-    parser.add_option("-s", "--silent", dest="silent",
-                      default=defaults["silent"], action="store_true",
-                      help="silence the logger")
-    parser.add_option("-v", "--verbose", dest="verbose",
-                      default=defaults["verbose"], action="count",
-                      help="increase the logging verbosity")
-    parser.add_option("-t", "--threads", dest="threads",
-                      default=defaults["threads"], type=int,
-                      help="number of concurrent requests")
-    parser.add_option("-n", "--nroutes", dest="nroutes",
-                      default=defaults["nroutes"], type=int,
-                      help="number of routes to run")
-    parser.add_option("-c", "--host", dest="host",
-                      default=defaults["host"], type=str,
-                      help="OSRM server address")
-    parser.add_option("-p", "--port", dest="port",
-                      default=defaults["port"], type=int,
-                      help="OSRM server port")
-
-    (opts, args) = parser.parse_args(args=argv[1:])
-    return (opts, args)
-
-
-def main(argv, out=None, err=None):
-    """Read in an .osrm file and produce a .hdf5 file.
-
-    Returns 0 if successfull, 1 on error.
-
-    :param argv: a list of command line arguments, usually :data:`sys.argv`.
-    :param out: stream to write messages; :data:`sys.stdout` if None.
-    :param err: stream to write error messages; :data:`sys.stderr` if None.
-    """
-    if out is None:  # pragma: nocover
-        out = sys.stdout
-    if err is None:  # pragma: nocover
-        err = sys.stderr
-    (opts, args) = parseargs(argv)
-    level = logging.WARNING - ((opts.verbose - opts.quiet) * 10)
-    if opts.silent:
-        level = logging.CRITICAL + 1
-
-    format = "%(message)s"
-    handler = logging.StreamHandler(err)
-    handler.setFormatter(logging.Formatter(format))
-    log.addHandler(handler)
-    log.setLevel(level)
-
-    if len(args) != 2:
-        log.error("You must specify an [input] and [output] file")
-        return 1
-
-    input_file, output_file = args[0], args[1]
-
-    log.info("Opening output file %s", output_file)
-    with tables.File(output_file, mode='w') as outputfd:
-
-        # Create output format
-        class OSRMRouteStep(tables.IsDescription):
-            route_idx = tables.UInt32Col()
-            idx_in_route = tables.UInt16Col()
-            start_node = tables.UInt32Col()
-            end_node = tables.UInt32Col()
-            duration = tables.UInt16Col()
-            start_lat = tables.Int32Col()
-            start_lon = tables.Int32Col()
-
-        group = outputfd.createGroup('/', 'routes', "OSRM routes")
-        steps = outputfd.createTable(
-            group, 'steps', OSRMRouteStep, "Steps")
-        row = steps.row
-
-        with tables.File(input_file, 'r') as inputfd:
-            nodetable = inputfd.root.osrm.nodes
-            log.info("Detected %i nodes", nodetable.nrows)
-
-            nthrds = opts.threads
-            log.info("Spawning %i compute processes", nthrds)
-            with futures.ProcessPoolExecutor(max_workers=nthrds) as executor:
-                route_runner = functools.partial(
-                    run_route, host=opts.host, port=opts.port)
-                # execute some jobs
-                route_count = 0
-                # Do the future mapping in chunks, to prevent memory
-                # blowup.  I don't understand why the executor keeps
-                # so much crap around.
-                nchunks = opts.nroutes / 1000
-                for ichunk in range(nchunks):
-                    log.info("Processing 1k route block %i/%i",
-                             ichunk + 1, nchunks)
-                    for route in executor.map(
-                            route_runner,
-                            generate_routes(1000, nodetable)):
-
-                        def get_pair_steps(x):
-                            """Generate iterator over each step in list"""
-                            return itertools.izip(x[:-1], x[1:])
-
-                        for j, (startn, endn) in enumerate(
-                                get_pair_steps(route)):
-                            row['route_idx'] = route_count
-                            row['idx_in_route'] = j
-                            row['start_node'] = startn[0]
-                            row['end_node'] = endn[0]
-                            row['duration'] = startn[1]
-                            row['start_lat'] = startn[2]
-                            row['start_lon'] = startn[3]
-                            row.append()
-                        route_count += 1
-                        steps.flush()
-
-    return 0
 
 if __name__ == "__main__":  # pragma: nocover
-    sys.exit(main(sys.argv))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('N', type=int, help='Number of routes to run')
+    parser.add_argument('--seed', type=int, help='Random seed')
+    parser.add_argument('--verbose', action='store_true',
+                        help='Increase log output')
+    parser.add_argument('--echo', action='store_true',
+                        help='Print all SQL activity')
+    dbgroup = parser.add_argument_group('postgis db')
+    dbgroup.add_argument(
+        '--dbconnection',
+        default='postgresql://osm:osm@localhost/osrm',
+        help='Postgres connection string.  Default %(default)s'
+    )
+    dbgroup.add_argument('--mode', choices=['recreate', 'update'],
+                         default='update',
+                         help='If "recreate", the tables will be dropped')
+    group = parser.add_argument_group('OSRM server')
+    group.add_argument('--host', default='localhost',
+                       help="OSRM server host. Default %(default)s")
+    group.add_argument('--port', default='8080',
+                       help="OSRM server port. Default %(default)s")
+    parser.add_argument(
+        '--threads', type=int, default=2,
+        help='Number of concurrent threads'
+    )
+
+    args = parser.parse_args()
+
+    if args.seed is not None:
+        log.info("Setting random seed to %i", args.seed)
+        numpy.random.seed(args.seed)
+
+    logging.basicConfig(
+        level=logging.INFO if args.verbose else logging.WARNING)
+
+    log.info("Creating DB engine")
+    engine = create_engine(args.dbconnection, echo=args.echo)
+
+    log.info("Creating DB session")
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    if args.mode == 'recreate':
+        log.info("Dropping existing OSRM tables")
+        models.OSRMRoute.metadata.drop_all(engine)
+        models.OSRMRouteStep.metadata.drop_all(engine)
+    log.info("Creating OSRM tables")
+    models.Base.metadata.create_all(engine)
+    models.Base.metadata.create_all(engine)
+
+    log.info("Querying list of all nodes")
+    nodes = []
+    for x in session.query(
+            models.OSRMNode.lat, models.OSRMNode.lon).yield_per(1000):
+        nodes.append(x)
+    nodes = numpy.array(nodes, dtype=int)
+
+    log.info("Spawning %i compute processes", args.threads)
+    with futures.ProcessPoolExecutor(max_workers=args.threads) as executor:
+        route_runner = functools.partial(
+            rr.run_route, host=args.host, port=args.port)
+        # execute some jobs
+        route_count = 0
+        # Do the future mapping in chunks, to prevent memory
+        # blowup.  I don't understand why the executor keeps
+        # so much crap around.
+        chunk_size = 50
+        nchunks = max(int(math.ceil(args.N / chunk_size)), 1)
+        for ichunk in range(nchunks):
+            log.info("Processing 1k route block %i/%i",
+                     ichunk + 1, nchunks)
+            routes_to_run = rr.generate_random_choices(chunk_size, nodes)
+            commit_every = 1
+            for route in executor.map(route_runner, routes_to_run):
+
+                coords, steps = route
+
+                if not len(steps):
+                    log.error("No steps returned for route: %s", coords)
+                    continue
+
+                route_hash = models.OSRMRoute.hash_route(
+                    tuple(coords[0]),
+                    tuple(coords[1]),
+                )
+                ormified_route = models.OSRMRoute(
+                    route_hash=route_hash,
+                    start_lat=coords[0][0],
+                    start_lon=coords[0][1],
+                    end_lat=coords[1][0],
+                    end_lon=coords[1][1],
+                    duration=steps[:, 1].sum(),
+                    nsteps=len(steps),
+                )
+
+                session.add(ormified_route)
+
+                def get_pair_steps(x):
+                    """Generate iterator over each step in list"""
+                    return itertools.izip(x[:-1], x[1:])
+
+                ormed_steps = []
+                for j, (startn, endn) in enumerate(
+                        get_pair_steps(steps)):
+                    start_id, _, start_lat, start_lon = startn
+                    end_id, _, end_lat, end_lon = endn
+                    ormified_step = models.OSRMRouteStep(
+                        route_hash=route_hash,
+                        step_idx=j,
+                        start_node_id=start_id,
+                        end_node_id=end_id,
+                        geom=models.OSRMRouteStep.build_geometry(
+                            start_lat, start_lon, end_lat, end_lon
+                        )
+                    )
+                    ormed_steps.append(ormified_step)
+                session.add_all(ormed_steps)
+
+                route_count += 1
+                if route_count % commit_every == 0:
+                    session.commit()
+                    log.info("Committed %i routes", route_count)
+                if route_count == args.N:
+                    break
+            session.commit()
+            log.info("Committed %i routes", route_count)
