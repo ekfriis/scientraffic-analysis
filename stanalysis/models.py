@@ -43,9 +43,10 @@ class OSRMEdge(Base):
     """Define a edge between 2 nodes in the routing network"""
     __tablename__ = "osrmedges"
 
-    source = Column(Integer, ForeignKey('osrmnodes.osm_id'), primary_key=True)
-    sink = Column(Integer, ForeignKey('osrmnodes.osm_id'), primary_key=True)
-    name_id = Column(Integer, primary_key=True)
+    hash = Column(BigInteger, primary_key=True)
+    source = Column(Integer, ForeignKey('osrmnodes.osm_id'))
+    sink = Column(Integer, ForeignKey('osrmnodes.osm_id'))
+    name_id = Column(Integer)
     source_node = relationship("OSRMNode", foreign_keys="OSRMEdge.source")
     sink_node = relationship("OSRMNode", foreign_keys="OSRMEdge.sink")
     distance = Column(Integer)
@@ -53,12 +54,19 @@ class OSRMEdge(Base):
     bidirectional = Column(Boolean)
 
     def __init__(self, source, sink, distance, weight, bidirectional, name_id):
+        self.hash = self.hash_route(source, sink, name_id)
         self.source = source
         self.sink = sink
         self.distance = distance
         self.weight = weight
         self.bidirectional = bool(bidirectional)
         self.name_id = name_id
+
+    @staticmethod
+    def hash_route(*xs):
+        """Generate a hash of the identifying info"""
+        return hash(xs)
+
 
 
 class OSRMRoute(Base):
