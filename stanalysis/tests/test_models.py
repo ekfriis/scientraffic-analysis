@@ -90,9 +90,11 @@ def test_insert_osrm_routestep():
                       end_lat=4, end_lon=5, duration=6, nsteps=7)
     session.add(route)
     step1 = OSRMRouteStep(route_hash=1, step_idx=0,
-                          start_lat=1, start_lon=2, end_lat=2, end_lon=3)
+                          start_lat=1, start_lon=2, end_lat=2, end_lon=3,
+                          geom=OSRMRouteStep.build_geometry(1, 2, 2, 3))
     step2 = OSRMRouteStep(route_hash=1, step_idx=1,
-                          start_lat=1, start_lon=2, end_lat=2, end_lon=3)
+                          start_lat=1, start_lon=2, end_lat=2, end_lon=3,
+                          geom=OSRMRouteStep.build_geometry(1, 2, 2, 3))
     session.add(step1)
     session.add(step2)
     session.commit()

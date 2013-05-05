@@ -5,7 +5,8 @@ GeoAlchemy PostGIS models
 
 """
 
-from geoalchemy import GeometryColumn, Point, WKTSpatialElement, GeometryDDL
+from geoalchemy import GeometryColumn, Point, LineString,\
+    WKTSpatialElement, GeometryDDL
 from geoalchemy.postgis import PGComparator
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, Boolean, ForeignKey
@@ -83,7 +84,17 @@ class OSRMRouteStep(Base):
     start_lon = Column(Integer)
     end_lat = Column(Integer)
     end_lon = Column(Integer)
+    geom = GeometryColumn(LineString(2), comparator=PGComparator)
+
+    @staticmethod
+    def build_geometry(start_lat, start_lon, end_lat, end_lon):
+        return WKTSpatialElement(
+            "LINESTRING(%0.6f %0.6f, %0.6f %0.6f)" % (
+                start_lon/1E5, start_lat/1E5,
+                end_lon/1E5, end_lat/1E5,
+            ))
 
 
 GeometryDDL(OSRMNode.__table__)
 GeometryDDL(OSRMEdge.__table__)
+GeometryDDL(OSRMRouteStep.__table__)
