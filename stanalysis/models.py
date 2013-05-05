@@ -90,10 +90,13 @@ class OSRMRouteStep(Base):
                         primary_key=True)
     route = relationship('OSRMRoute', backref='steps')
     step_idx = Column(Integer, primary_key=True)
-    start_lat = Column(Integer)
-    start_lon = Column(Integer)
-    end_lat = Column(Integer)
-    end_lon = Column(Integer)
+    start_node_id = Column(Integer, ForeignKey('osrmnodes.osm_id'))
+    end_node_id = Column(Integer, ForeignKey('osrmnodes.osm_id'))
+    start_node = relationship("OSRMNode",
+                              foreign_keys="OSRMRouteStep.start_node_id")
+    end_node = relationship("OSRMNode",
+                            foreign_keys="OSRMRouteStep.end_node_id")
+
     geom = GeometryColumn(LineString(2), comparator=PGComparator)
 
     @staticmethod

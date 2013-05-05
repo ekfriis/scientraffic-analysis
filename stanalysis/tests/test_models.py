@@ -93,11 +93,19 @@ def test_insert_osrm_routestep():
     route = OSRMRoute(route_hash=route_hash, start_lat=2, start_lon=3,
                       end_lat=4, end_lon=5, duration=6, nsteps=7)
     session.add(route)
+    node1 = OSRMNode(1, 1, 2, True, False)
+    node2 = OSRMNode(2, 3, 4, False, False)
+    node3 = OSRMNode(3, 5, 6, False, False)
+    session.add(node1)
+    session.add(node2)
+    session.add(node3)
+
     step1 = OSRMRouteStep(route_hash=route_hash, step_idx=0,
-                          start_lat=1, start_lon=2, end_lat=2, end_lon=3,
+                          start_node_id=1, end_node_id=2,
                           geom=OSRMRouteStep.build_geometry(1, 2, 2, 3))
+
     step2 = OSRMRouteStep(route_hash=route_hash, step_idx=1,
-                          start_lat=1, start_lon=2, end_lat=2, end_lon=3,
+                          start_node_id=2, end_node_id=3,
                           geom=OSRMRouteStep.build_geometry(1, 2, 2, 3))
     session.add(step1)
     session.add(step2)
@@ -108,7 +116,10 @@ def test_insert_osrm_routestep():
     eq_(result[0].start_lat, 2)
     eq_(result[0].nsteps, 7)
     eq_(len(result[0].steps), 2)
-    eq_(result[0].steps[1].end_lon, 3)
+    eq_(result[0].steps[0].start_node.lon, 2)
+    eq_(result[0].steps[0].start_node.lat, 1)
+    eq_(result[0].steps[0].end_node.lon, 4)
+    eq_(result[0].steps[0].end_node.lat, 3)
     eq_(result[0].steps[1].route.duration, 6)
     session.close()
     drop_tables()
