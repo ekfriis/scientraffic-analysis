@@ -68,16 +68,16 @@ def test_insert_osrm_route():
     drop_tables()
     create_tables()
     session = Session()
-    route_hash = hex(hash(1))
+    route_hash = OSRMRoute.hash_route(1)
     route = OSRMRoute(route_hash=route_hash, start_lat=2, start_lon=3,
                       end_lat=4, end_lon=5, duration=6, nsteps=7)
     session.add(route)
     session.commit()
     result = session.query(OSRMRoute).filter(
-        OSRMRoute.route_hash == hex(hash(2))).all()
+        OSRMRoute.route_hash == OSRMRoute.hash_route(2)).all()
     eq_(len(result), 0)
     result = session.query(OSRMRoute).filter(
-        OSRMRoute.route_hash == hex(hash(1))).all()
+        OSRMRoute.route_hash == OSRMRoute.hash_route(1)).all()
     eq_(len(result), 1)
     eq_(result[0].start_lat, 2)
     eq_(result[0].nsteps, 7)
@@ -89,7 +89,7 @@ def test_insert_osrm_routestep():
     drop_tables()
     create_tables()
     session = Session()
-    route_hash = hex(hash(1))
+    route_hash = OSRMRoute.hash_route(1)
     route = OSRMRoute(route_hash=route_hash, start_lat=2, start_lon=3,
                       end_lat=4, end_lon=5, duration=6, nsteps=7)
     session.add(route)

@@ -5,6 +5,8 @@ GeoAlchemy PostGIS models
 
 """
 
+import hashlib
+
 from geoalchemy import GeometryColumn, Point, LineString,\
     WKTSpatialElement, GeometryDDL
 from geoalchemy.postgis import PGComparator
@@ -72,6 +74,14 @@ class OSRMRoute(Base):
     end_lon = Column(Integer)
     duration = Column(Integer)
     nsteps = Column(Integer)
+
+    @staticmethod
+    def hash_route(*xs):
+        """Generate an MD5 hash of the route info"""
+        hash = hashlib.md5()
+        for x in xs:
+            hash.update(str(x))
+        return hash.hexdigest()
 
 
 class OSRMRouteStep(Base):
