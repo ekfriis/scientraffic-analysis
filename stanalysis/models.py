@@ -92,10 +92,10 @@ class OSRMRouteStep(Base):
     step_idx = Column(Integer, primary_key=True)
     start_node_id = Column(Integer, ForeignKey('osrmnodes.osm_id'))
     end_node_id = Column(Integer, ForeignKey('osrmnodes.osm_id'))
-    start_node = relationship("OSRMNode",
-                              foreign_keys="OSRMRouteStep.start_node_id")
-    end_node = relationship("OSRMNode",
-                            foreign_keys="OSRMRouteStep.end_node_id")
+    start_node = relationship(
+        "OSRMNode", foreign_keys="OSRMRouteStep.start_node_id")
+    end_node = relationship(
+        "OSRMNode", foreign_keys="OSRMRouteStep.end_node_id")
 
     geom = GeometryColumn(LineString(2), comparator=PGComparator)
 
