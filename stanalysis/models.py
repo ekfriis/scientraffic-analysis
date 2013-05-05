@@ -68,6 +68,22 @@ class OSRMEdge(Base):
         return hash(xs)
 
 
+class OSRMEdgeGeom(Base):
+    """Defines the geometry of the Edge"""
+    __tablename__ = "osrmedgegeoms"
+    edge_hash = Column(BigInteger, ForeignKey('osrmedges.hash'),
+                       primary_key=True)
+    edge = relationship("OSRMEdge", backref='geometry')
+    geom = GeometryColumn(Point(2), comparator=PGComparator)
+
+    @staticmethod
+    def build_geometry(start_lat, start_lon, end_lat, end_lon):
+        return WKTSpatialElement(
+            "LINESTRING(%0.6f %0.6f, %0.6f %0.6f)" % (
+                start_lon/1E5, start_lat/1E5,
+                end_lon/1E5, end_lat/1E5,
+            ))
+
 
 class OSRMRoute(Base):
     """Definte a toy, random route, run using the OSRM engine"""
@@ -113,4 +129,5 @@ class OSRMRouteStep(Base):
 
 GeometryDDL(OSRMNode.__table__)
 GeometryDDL(OSRMEdge.__table__)
+GeometryDDL(OSRMEdgeGeom.__table__)
 GeometryDDL(OSRMRouteStep.__table__)
