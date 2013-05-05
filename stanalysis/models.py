@@ -9,7 +9,7 @@ from geoalchemy import GeometryColumn, Point, LineString,\
     WKTSpatialElement, GeometryDDL
 from geoalchemy.postgis import PGComparator
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, Boolean, ForeignKey, String
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -65,7 +65,7 @@ class OSRMRoute(Base):
     """Definte a toy, random route, run using the OSRM engine"""
     __tablename__ = "osrmroute"
 
-    route_hash = Column(Integer, primary_key=True)
+    route_hash = Column(String(64), primary_key=True)
     start_lat = Column(Integer)
     start_lon = Column(Integer)
     end_lat = Column(Integer)
@@ -76,7 +76,7 @@ class OSRMRoute(Base):
 
 class OSRMRouteStep(Base):
     __tablename__ = "osrmroutestep"
-    route_hash = Column(Integer, ForeignKey('osrmroute.route_hash'),
+    route_hash = Column(String(64), ForeignKey('osrmroute.route_hash'),
                         primary_key=True)
     route = relationship('OSRMRoute', backref='steps')
     step_idx = Column(Integer, primary_key=True)

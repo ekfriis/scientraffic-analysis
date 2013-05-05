@@ -68,13 +68,16 @@ def test_insert_osrm_route():
     drop_tables()
     create_tables()
     session = Session()
-    route = OSRMRoute(route_hash=1, start_lat=2, start_lon=3,
+    route_hash = hex(hash(1))
+    route = OSRMRoute(route_hash=route_hash, start_lat=2, start_lon=3,
                       end_lat=4, end_lon=5, duration=6, nsteps=7)
     session.add(route)
     session.commit()
-    result = session.query(OSRMRoute).filter(OSRMRoute.route_hash == 2).all()
+    result = session.query(OSRMRoute).filter(
+        OSRMRoute.route_hash == hex(hash(2))).all()
     eq_(len(result), 0)
-    result = session.query(OSRMRoute).filter(OSRMRoute.route_hash == 1).all()
+    result = session.query(OSRMRoute).filter(
+        OSRMRoute.route_hash == hex(hash(1))).all()
     eq_(len(result), 1)
     eq_(result[0].start_lat, 2)
     eq_(result[0].nsteps, 7)
@@ -86,19 +89,21 @@ def test_insert_osrm_routestep():
     drop_tables()
     create_tables()
     session = Session()
-    route = OSRMRoute(route_hash=1, start_lat=2, start_lon=3,
+    route_hash = hex(hash(1))
+    route = OSRMRoute(route_hash=route_hash, start_lat=2, start_lon=3,
                       end_lat=4, end_lon=5, duration=6, nsteps=7)
     session.add(route)
-    step1 = OSRMRouteStep(route_hash=1, step_idx=0,
+    step1 = OSRMRouteStep(route_hash=route_hash, step_idx=0,
                           start_lat=1, start_lon=2, end_lat=2, end_lon=3,
                           geom=OSRMRouteStep.build_geometry(1, 2, 2, 3))
-    step2 = OSRMRouteStep(route_hash=1, step_idx=1,
+    step2 = OSRMRouteStep(route_hash=route_hash, step_idx=1,
                           start_lat=1, start_lon=2, end_lat=2, end_lon=3,
                           geom=OSRMRouteStep.build_geometry(1, 2, 2, 3))
     session.add(step1)
     session.add(step2)
     session.commit()
-    result = session.query(OSRMRoute).filter(OSRMRoute.route_hash == 1).all()
+    result = session.query(OSRMRoute).filter(
+        OSRMRoute.route_hash == route_hash).all()
     eq_(len(result), 1)
     eq_(result[0].start_lat, 2)
     eq_(result[0].nsteps, 7)
