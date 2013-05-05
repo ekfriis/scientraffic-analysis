@@ -28,6 +28,8 @@ def test_insert_node():
     eq_(results[0].lon, 11800000)
     eq_(results[0].bollard, False)
     eq_(results[0].traffic_light, False)
+    eq_(len(results[0].in_edges), 0)
+    eq_(len(results[0].out_edges), 0)
     # check if we can spatial query it
     covering_box = WKTSpatialElement(
         'POLYGON((117 33, 119 33, 119 35, 117 35, 117 33))')
@@ -59,6 +61,11 @@ def test_insert_edge():
     eq_(result[0].source_node.lon, 2)
     eq_(result[0].source_node.bollard, True)
     eq_(result[0].name_id, 3)
+    eq_(result[0].source_node.out_edges[0].distance, 5)
+    eq_(len(result[0].source_node.in_edges), 0)
+    eq_(len(result[0].sink_node.in_edges), 1)
+    eq_(len(result[0].source_node.out_edges), 1)
+    eq_(len(result[0].sink_node.out_edges), 0)
     session.commit()
     session.close()
     drop_tables()

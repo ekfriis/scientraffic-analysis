@@ -26,8 +26,8 @@ class OSRMNode(Base):
     traffic_light = Column(Boolean)
     geom = GeometryColumn(Point(2), comparator=PGComparator)
     # Edges associated to this node
-    #in_edges = relationship("OSRMEdge", foreign_keys=['osrmedges.sink'])
-    #out_edges = relationship("OSRMEdge", foreign_keys=['osrmedges.source'])
+    in_edges = relationship("OSRMEdge", foreign_keys='OSRMEdge.sink')
+    out_edges = relationship("OSRMEdge", foreign_keys='OSRMEdge.source')
 
     def __init__(self, osm_id, lat, lon, bollard, traffic_light):
         self.osm_id = osm_id
