@@ -44,9 +44,9 @@ class OSRMEdge(Base):
     __tablename__ = "osrmedges"
 
     hash = Column(BigInteger, primary_key=True)
-    source = Column(Integer, ForeignKey('osrmnodes.osm_id'))
-    sink = Column(Integer, ForeignKey('osrmnodes.osm_id'))
-    name_id = Column(Integer)
+    source = Column(Integer, ForeignKey('osrmnodes.osm_id'), index=True)
+    sink = Column(Integer, ForeignKey('osrmnodes.osm_id'), index=True)
+    name_id = Column(Integer, index=True)
     source_node = relationship("OSRMNode", foreign_keys="OSRMEdge.source")
     sink_node = relationship("OSRMNode", foreign_keys="OSRMEdge.sink")
     distance = Column(Integer)
