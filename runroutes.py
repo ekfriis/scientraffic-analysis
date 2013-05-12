@@ -94,7 +94,7 @@ if __name__ == "__main__":  # pragma: nocover
             log.info("Processing 1k route block %i/%i",
                      ichunk + 1, nchunks)
             routes_to_run = rr.generate_random_choices(chunk_size, nodes)
-            commit_every = 1
+            commit_every = 20
             for route in executor.map(route_runner, routes_to_run):
 
                 coords, steps = route
@@ -131,11 +131,7 @@ if __name__ == "__main__":  # pragma: nocover
                     ormified_step = models.OSRMRouteStep(
                         route_hash=route_hash,
                         step_idx=j,
-                        start_node_id=start_id,
-                        end_node_id=end_id,
-                        geom=models.OSRMRouteStep.build_geometry(
-                            start_lat, start_lon, end_lat, end_lon
-                        )
+                        edge_id=models.OSRMEdge.hash_edge(start_id, end_id),
                     )
                     ormed_steps.append(ormified_step)
                 session.add_all(ormed_steps)
