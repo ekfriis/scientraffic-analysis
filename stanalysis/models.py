@@ -5,8 +5,8 @@ GeoAlchemy PostGIS models
 
 """
 
-from geoalchemy import GeometryColumn, Point, LineString,\
-    WKTSpatialElement, GeometryDDL
+from geoalchemy import \
+    GeometryColumn, Point, LineString, WKTSpatialElement, GeometryDDL
 from geoalchemy.postgis import PGComparator
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, Boolean, ForeignKey, BigInteger
@@ -54,7 +54,7 @@ class OSRMEdge(Base):
     bidirectional = Column(Boolean)
 
     def __init__(self, source, sink, distance, weight, bidirectional, name_id):
-        self.hash = self.hash_route(source, sink, name_id)
+        self.hash = self.hash_edge(source, sink, name_id)
         self.source = source
         self.sink = sink
         self.distance = distance
@@ -63,26 +63,17 @@ class OSRMEdge(Base):
         self.name_id = name_id
 
     @staticmethod
-    def hash_route(*xs):
+    def hash_edge(*xs):
         """Generate a hash of the identifying info"""
         return hash(xs)
 
 
 class OSRMEdgeGeom(Base):
-    """Defines the geometry of the Edge"""
-    __tablename__ = "osrmedgegeoms"
-    edge_hash = Column(BigInteger, ForeignKey('osrmedges.hash'),
-                       primary_key=True)
-    edge = relationship("OSRMEdge", backref='geometry')
-    geom = GeometryColumn(Point(2), comparator=PGComparator)
-
-    @staticmethod
-    def build_geometry(start_lat, start_lon, end_lat, end_lon):
-        return WKTSpatialElement(
-            "LINESTRING(%0.6f %0.6f, %0.6f %0.6f)" % (
-                start_lon/1E5, start_lat/1E5,
-                end_lon/1E5, end_lat/1E5,
-            ))
+    """Define a edge geometry between 2 nodes in the routing network"""
+    __tablename__ = "osrmedgegeom"
+    edge_id = Column(BigInteger, ForeignKey("osrmedges.hash"),
+                     primary_key=True)
+    geom = GeometryColumn(LineString(2), comparator=PGComparator)
 
 
 class OSRMRoute(Base):
@@ -107,27 +98,12 @@ class OSRMRouteStep(Base):
     __tablename__ = "osrmroutestep"
     route_hash = Column(BigInteger, ForeignKey('osrmroute.route_hash'),
                         primary_key=True)
-    route = relationship('OSRMRoute', backref='steps')
     step_idx = Column(Integer, primary_key=True)
-    start_node_id = Column(Integer, ForeignKey('osrmnodes.osm_id'))
-    end_node_id = Column(Integer, ForeignKey('osrmnodes.osm_id'))
-    start_node = relationship(
-        "OSRMNode", foreign_keys="OSRMRouteStep.start_node_id")
-    end_node = relationship(
-        "OSRMNode", foreign_keys="OSRMRouteStep.end_node_id")
-
-    geom = GeometryColumn(LineString(2), comparator=PGComparator)
-
-    @staticmethod
-    def build_geometry(start_lat, start_lon, end_lat, end_lon):
-        return WKTSpatialElement(
-            "LINESTRING(%0.6f %0.6f, %0.6f %0.6f)" % (
-                start_lon/1E5, start_lat/1E5,
-                end_lon/1E5, end_lat/1E5,
-            ))
+    edge_id = Column(BigInteger, ForeignKey("osrmedges.hash"), index=True)
+    route = relationship('OSRMRoute', backref='steps')
+    edge = relationship("OSRMEdge")
 
 
 GeometryDDL(OSRMNode.__table__)
-GeometryDDL(OSRMEdge.__table__)
 GeometryDDL(OSRMEdgeGeom.__table__)
 GeometryDDL(OSRMRouteStep.__table__)

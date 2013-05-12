@@ -107,13 +107,18 @@ def test_insert_osrm_routestep():
     session.add(node2)
     session.add(node3)
 
+    edge1 = OSRMEdge(1, 2, 5, 0.3, True, 1)
+    edge2 = OSRMEdge(2, 3, 6, 0.3, True, 2)
+
+    session.add(edge1)
+    session.add(edge2)
+
     step1 = OSRMRouteStep(route_hash=route_hash, step_idx=0,
-                          start_node_id=1, end_node_id=2,
-                          geom=OSRMRouteStep.build_geometry(1, 2, 2, 3))
+                          edge_id=OSRMEdge.hash_edge(1, 2, 1))
 
     step2 = OSRMRouteStep(route_hash=route_hash, step_idx=1,
-                          start_node_id=2, end_node_id=3,
-                          geom=OSRMRouteStep.build_geometry(1, 2, 2, 3))
+                          edge_id=OSRMEdge.hash_edge(2, 3, 2))
+
     session.add(step1)
     session.add(step2)
     session.commit()
@@ -123,10 +128,10 @@ def test_insert_osrm_routestep():
     eq_(result[0].start_lat, 2)
     eq_(result[0].nsteps, 7)
     eq_(len(result[0].steps), 2)
-    eq_(result[0].steps[0].start_node.lon, 2)
-    eq_(result[0].steps[0].start_node.lat, 1)
-    eq_(result[0].steps[0].end_node.lon, 4)
-    eq_(result[0].steps[0].end_node.lat, 3)
+    eq_(result[0].steps[0].edge.source_node.lon, 2)
+    eq_(result[0].steps[0].edge.source_node.lat, 1)
+    eq_(result[0].steps[0].edge.sink_node.lon, 4)
+    eq_(result[0].steps[0].edge.sink_node.lat, 3)
     eq_(result[0].steps[1].route.duration, 6)
     session.close()
     drop_tables()
