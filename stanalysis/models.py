@@ -39,6 +39,7 @@ class OSRMNode(Base):
             "POINT(%0.6f %0.6f)" % (lon/1E5, lat/1E5))
 
 
+
 class OSRMEdge(Base):
     """Define a edge between 2 nodes in the routing network"""
     __tablename__ = "osrmedges"
@@ -63,7 +64,7 @@ class OSRMEdge(Base):
     @staticmethod
     def hash_edge(*xs):
         """Generate a hash of the identifying info"""
-        return hash(xs)
+        return hash(sorted(xs))
 
     def build_geom(self):
         return WKTSpatialElement(
