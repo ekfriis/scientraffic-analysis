@@ -12,7 +12,7 @@ import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from stanalysis.models import OSRMEdgeGeom, build_edge_geometries
+from stanalysis.models import Base, OSRMEdgeGeom, build_edge_geometries
 
 log = logging.getLogger(__name__)
 
@@ -40,8 +40,9 @@ if __name__ == "__main__":
     session = Session()
 
     log.info("Dropping existing geometry tables")
-    OSRMEdgeGeom.metadata.drop_all(engine)
-    OSRMEdgeGeom.metadata.create_all(engine)
+    Base.metadata.create_all(engine)
+    dropped = session.query(OSRMEdgeGeom).delete()
+    log.info("Dropped %i rows", dropped)
 
     log.info("Building geometires")
     build_edge_geometries(session)
