@@ -46,21 +46,19 @@ class OSRMEdge(Base):
     hash = Column(BigInteger, primary_key=True)
     source = Column(Integer, ForeignKey('osrmnodes.osm_id'), index=True)
     sink = Column(Integer, ForeignKey('osrmnodes.osm_id'), index=True)
-    name_id = Column(Integer, index=True)
     source_node = relationship("OSRMNode", foreign_keys="OSRMEdge.source")
     sink_node = relationship("OSRMNode", foreign_keys="OSRMEdge.sink")
     distance = Column(Integer)
     weight = Column(Integer)
     bidirectional = Column(Boolean)
 
-    def __init__(self, source, sink, distance, weight, bidirectional, name_id):
-        self.hash = self.hash_edge(source, sink, name_id)
+    def __init__(self, source, sink, distance, weight, bidirectional):
+        self.hash = self.hash_edge(source, sink)
         self.source = source
         self.sink = sink
         self.distance = distance
         self.weight = weight
         self.bidirectional = bool(bidirectional)
-        self.name_id = name_id
 
     @staticmethod
     def hash_edge(*xs):

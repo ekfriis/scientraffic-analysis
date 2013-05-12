@@ -56,7 +56,7 @@ def test_insert_edge():
     node2 = OSRMNode(2, 3, 4, False, False)
     session.add(node1)
     session.add(node2)
-    the_edge = OSRMEdge(1, 2, 5, 5, False, 3)
+    the_edge = OSRMEdge(1, 2, 5, 5, False)
     session.add(the_edge)
     session.commit()
     result = session.query(OSRMEdge).join(OSRMEdge.source_node).\
@@ -64,7 +64,6 @@ def test_insert_edge():
     eq_(len(result), 1)
     eq_(result[0].source_node.lon, 2)
     eq_(result[0].source_node.bollard, True)
-    eq_(result[0].name_id, 3)
     eq_(result[0].source_node.out_edges[0].distance, 5)
     eq_(len(result[0].source_node.in_edges), 0)
     eq_(len(result[0].sink_node.in_edges), 1)
@@ -83,7 +82,7 @@ def test_insert_edgegeom():
     node2 = OSRMNode(2, 3, 4, False, False)
     session.add(node1)
     session.add(node2)
-    the_edge = OSRMEdge(1, 2, 5, 5, False, 3)
+    the_edge = OSRMEdge(1, 2, 5, 5, False)
     session.add(the_edge)
     session.commit()
 
@@ -136,17 +135,17 @@ def test_insert_osrm_routestep():
     session.add(node2)
     session.add(node3)
 
-    edge1 = OSRMEdge(1, 2, 5, 0.3, True, 1)
-    edge2 = OSRMEdge(2, 3, 6, 0.3, True, 2)
+    edge1 = OSRMEdge(1, 2, 5, 0.3, True)
+    edge2 = OSRMEdge(2, 3, 6, 0.3, True)
 
     session.add(edge1)
     session.add(edge2)
 
     step1 = OSRMRouteStep(route_hash=route_hash, step_idx=0,
-                          edge_id=OSRMEdge.hash_edge(1, 2, 1))
+                          edge_id=OSRMEdge.hash_edge(1, 2))
 
     step2 = OSRMRouteStep(route_hash=route_hash, step_idx=1,
-                          edge_id=OSRMEdge.hash_edge(2, 3, 2))
+                          edge_id=OSRMEdge.hash_edge(2, 3))
 
     session.add(step1)
     session.add(step2)
