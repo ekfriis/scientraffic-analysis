@@ -67,6 +67,13 @@ class OSRMEdge(Base):
         """Generate a hash of the identifying info"""
         return hash(xs)
 
+    def build_geom(self):
+        return WKTSpatialElement(
+            "LINESTRING(%0.6f %0.6f, %0.6f %0.6f)" % (
+                self.source_node.lon/1E5, self.source_node.lat/1E5,
+                self.sink_node.lon/1E5, self.sink_node.lat/1E5,
+            ))
+
 
 class OSRMEdgeGeom(Base):
     """Define a edge geometry between 2 nodes in the routing network"""
@@ -74,6 +81,15 @@ class OSRMEdgeGeom(Base):
     edge_id = Column(BigInteger, ForeignKey("osrmedges.hash"),
                      primary_key=True)
     geom = GeometryColumn(LineString(2), comparator=PGComparator)
+
+
+def build_edge_geometries(session):
+    session.execute("""INSERT INTO osrmedgegeom (
+        SELECT osrmedges.hash, ST_MakeLine(source.geom, sink.geom)
+        FROM osrmedges
+        INNER JOIN osrmnodes as source ON osrmedges.source = source.osm_id
+        INNER JOIN osrmnodes as sink ON osrmedges.sink = sink.osm_id
+    );""")
 
 
 class OSRMRoute(Base):
@@ -105,5 +121,6 @@ class OSRMRouteStep(Base):
 
 
 GeometryDDL(OSRMNode.__table__)
+GeometryDDL(OSRMEdge.__table__)
 GeometryDDL(OSRMEdgeGeom.__table__)
 GeometryDDL(OSRMRouteStep.__table__)

@@ -8,6 +8,8 @@ import logging
 from nose.tools import eq_
 logging.basicConfig(level=logging.WARNING)
 
+log = logging.getLogger(__name__)
+
 
 from geoalchemy import WKTSpatialElement
 from stanalysis.tests.mockdb import create_tables, drop_tables, Session
