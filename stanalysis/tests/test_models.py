@@ -14,6 +14,8 @@ log = logging.getLogger(__name__)
 from geoalchemy import WKTSpatialElement
 from stanalysis.tests.mockdb import create_tables, drop_tables, Session
 from stanalysis.models import OSRMNode, OSRMEdge, OSRMRoute, OSRMRouteStep
+from stanalysis.models import OSRMEdgeGeom
+from stanalysis.models import build_edge_geometries
 
 
 def test_insert_node():
@@ -69,6 +71,31 @@ def test_insert_edge():
     eq_(len(result[0].source_node.out_edges), 1)
     eq_(len(result[0].sink_node.out_edges), 0)
     session.commit()
+    session.close()
+    drop_tables()
+
+
+def test_insert_edgegeom():
+    drop_tables()
+    create_tables()
+    session = Session()
+    node1 = OSRMNode(1, 1, 2, True, False)
+    node2 = OSRMNode(2, 3, 4, False, False)
+    session.add(node1)
+    session.add(node2)
+    the_edge = OSRMEdge(1, 2, 5, 5, False, 3)
+    session.add(the_edge)
+    session.commit()
+
+    build_edge_geometries(session)
+
+    result = session.query(OSRMEdgeGeom).all()
+
+    eq_(len(result), 1)
+    eq_(result[0].edge.source_node.lon, 2)
+    eq_(session.scalar(result[0].geom.wkt),
+        u'LINESTRING(2e-05 1e-05,4e-05 3e-05)')
+
     session.close()
     drop_tables()
 
@@ -141,3 +168,4 @@ def test_insert_osrm_routestep():
 if __name__ == "__main__":
     test_insert_node()
     test_insert_edge()
+    test_insert_edgegeom()

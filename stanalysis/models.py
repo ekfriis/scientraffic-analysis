@@ -78,12 +78,14 @@ class OSRMEdge(Base):
 class OSRMEdgeGeom(Base):
     """Define a edge geometry between 2 nodes in the routing network"""
     __tablename__ = "osrmedgegeom"
-    edge_id = Column(BigInteger, ForeignKey("osrmedges.hash"),
-                     primary_key=True)
+    hash = Column(BigInteger, ForeignKey("osrmedges.hash"),
+                  primary_key=True)
     geom = GeometryColumn(LineString(2), comparator=PGComparator)
+    edge = relationship("OSRMEdge")
 
 
 def build_edge_geometries(session):
+    """ PostGIS query to generate the edge geometries """
     session.execute("""INSERT INTO osrmedgegeom (
         SELECT osrmedges.hash, ST_MakeLine(source.geom, sink.geom)
         FROM osrmedges
