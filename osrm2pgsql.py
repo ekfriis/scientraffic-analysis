@@ -51,7 +51,7 @@ def upload_osrm_binary(binaryfd, dbsession, merge=False, commit_every=1000):
             edge.bidirectional,
         )
         # make sure we don't j
-        key = OSRMEdge.hash_edge((edge.node_a, edge.node_b))
+        key = OSRMEdge.hash_edge(edge.node_a, edge.node_b)
         if key in existing_edges:
             log.warning("Skipping existing edge: %s", repr(edge))
             continue
