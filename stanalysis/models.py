@@ -113,4 +113,3 @@ class OSRMRouteStep(Base):
 GeometryDDL(OSRMNode.__table__)
 GeometryDDL(OSRMEdge.__table__)
 GeometryDDL(OSRMEdgeGeom.__table__)
-GeometryDDL(OSRMRouteStep.__table__)
