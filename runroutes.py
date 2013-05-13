@@ -79,8 +79,8 @@ if __name__ == "__main__":  # pragma: nocover
         nodes.append(x)
     nodes = numpy.array(nodes, dtype=int)
 
-    log.info("Spawning %i compute processes", args.threads)
-    with futures.ProcessPoolExecutor(max_workers=args.threads) as executor:
+    log.info("Spawning %i workers", args.threads)
+    with futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
         route_runner = functools.partial(
             rr.run_route, host=args.host, port=args.port)
         # execute some jobs
@@ -88,11 +88,11 @@ if __name__ == "__main__":  # pragma: nocover
         # Do the future mapping in chunks, to prevent memory
         # blowup.  I don't understand why the executor keeps
         # so much crap around.
-        chunk_size = 50
+        chunk_size = 1000
         nchunks = max(int(math.ceil(args.N / chunk_size)), 1)
         for ichunk in range(nchunks):
-            log.info("Processing 1k route block %i/%i",
-                     ichunk + 1, nchunks)
+            log.info("Processing %i route block %i/%i",
+                     chunk_size, ichunk + 1, nchunks)
             routes_to_run = rr.generate_random_choices_exponential(
                 chunk_size, nodes)
             commit_every = 20
