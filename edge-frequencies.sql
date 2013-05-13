@@ -9,7 +9,7 @@ SELECT
 INTO 
   edgefrequencies
 FROM 
-  osrmroutestep AS step
+  osrmroutesteps AS step
 INNER JOIN 
   osrmedgegeoms AS geoms ON geoms.hash = step.edge_id
 GROUP BY step.edge_id, geoms.geom;

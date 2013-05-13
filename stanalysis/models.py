@@ -84,7 +84,7 @@ class OSRMEdge(Base):
 
 class OSRMEdgeGeom(Base):
     """Define a edge geometry between 2 nodes in the routing network"""
-    __tablename__ = "osrmedgegeom"
+    __tablename__ = "osrmedgegeoms"
     hash = Column(BigInteger, ForeignKey("osrmedges.hash"),
                   primary_key=True)
     geom = GeometryColumn(LineString(2), comparator=PGComparator)
@@ -93,7 +93,7 @@ class OSRMEdgeGeom(Base):
 
 class OSRMRoute(Base):
     """Definte a toy, random route, run using the OSRM engine"""
-    __tablename__ = "osrmroute"
+    __tablename__ = "osrmroutes"
 
     route_hash = Column(BigInteger, primary_key=True)
     start_lat = Column(Integer)
@@ -110,7 +110,7 @@ class OSRMRoute(Base):
 
 
 class OSRMRouteStep(Base):
-    __tablename__ = "osrmroutestep"
+    __tablename__ = "osrmroutesteps"
     route_hash = Column(BigInteger, primary_key=True)
     step_idx = Column(Integer, primary_key=True)
     edge_id = Column(BigInteger)
