@@ -133,6 +133,7 @@ if __name__ == "__main__":  # pragma: nocover
                         route_hash=route_hash,
                         step_idx=j,
                         edge_id=models.OSRMEdge.hash_edge(start_id, end_id),
+                        forward=models.OSRMEdge.is_forward(start_id, end_id),
                     )
                     ormed_steps.append(ormified_step)
                 session.add_all(ormed_steps)
