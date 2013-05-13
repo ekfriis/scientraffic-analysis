@@ -79,9 +79,6 @@ if __name__ == "__main__":  # pragma: nocover
         nodes.append(x)
     nodes = numpy.array(nodes, dtype=int)
 
-    import pdb
-    pdb.set_trace()
-
     log.info("Spawning %i compute processes", args.threads)
     with futures.ProcessPoolExecutor(max_workers=args.threads) as executor:
         route_runner = functools.partial(
@@ -96,7 +93,8 @@ if __name__ == "__main__":  # pragma: nocover
         for ichunk in range(nchunks):
             log.info("Processing 1k route block %i/%i",
                      ichunk + 1, nchunks)
-            routes_to_run = rr.generate_random_choices(chunk_size, nodes)
+            routes_to_run = rr.generate_random_choices_exponential(
+                chunk_size, nodes)
             commit_every = 20
             for route in executor.map(route_runner, routes_to_run):
 
@@ -140,7 +138,8 @@ if __name__ == "__main__":  # pragma: nocover
                 session.add_all(ormed_steps)
                 session.commit()
                 route_count += 1
-                log.info("Committed %i routes", route_count)
+                log.info("Committed route %i with %i steps",
+                         route_count, len(ormed_steps))
                 if route_count == args.N:
                     break
             log.info("Committed %i routes", route_count)
