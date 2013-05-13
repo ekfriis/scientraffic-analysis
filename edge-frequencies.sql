@@ -1,3 +1,6 @@
+-- Determine the frequency a give edge (road segment) is
+-- traveled through in randomly selected routes.
+
 -- run me as: psql osrm osm < edge-frequencies.sql
 
 DROP TABLE edgefrequencies;
