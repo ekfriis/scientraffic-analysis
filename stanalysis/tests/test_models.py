@@ -115,10 +115,12 @@ def test_insert_osrm_routestep():
     session.add(edge2)
 
     step1 = OSRMRouteStep(route_hash=route_hash, step_idx=0,
-                          edge_id=OSRMEdge.hash_edge(1, 2))
+                          edge_id=OSRMEdge.hash_edge(1, 2),
+                          forward=OSRMEdge.is_forward(1, 2))
 
     step2 = OSRMRouteStep(route_hash=route_hash, step_idx=1,
-                          edge_id=OSRMEdge.hash_edge(2, 3))
+                          edge_id=OSRMEdge.hash_edge(3, 2),
+                          forward=OSRMEdge.is_forward(3, 2))
 
     session.add(step1)
     session.add(step2)
@@ -128,6 +130,15 @@ def test_insert_osrm_routestep():
     eq_(len(result), 1)
     eq_(result[0].start_lat, 2)
     eq_(result[0].nsteps, 7)
+
+    steps = session.query(OSRMRouteStep).all()
+    eq_(steps[0].edge_id, OSRMEdge.hash_edge(1, 2))
+    eq_(steps[0].edge_id, OSRMEdge.hash_edge(2, 1))  # commutes
+    eq_(steps[0].step_idx, 0)
+    eq_(steps[0].forward, True)
+    eq_(steps[1].step_idx, 1)
+    eq_(steps[1].forward, False)
+
     # Fixme - see if we can make a relationship w/o fkey constraint
     #eq_(len(result[0].steps), 2)
     #eq_(result[0].steps[0].edge.source_node.lon, 2)

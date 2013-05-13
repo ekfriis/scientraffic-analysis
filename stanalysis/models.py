@@ -65,6 +65,15 @@ class OSRMEdge(Base):
         """Generate a hash of the identifying info"""
         return hash(tuple(sorted((source, sink))))
 
+    @staticmethod
+    def is_forward(source, sink):
+        """Determine if we are transversing edge forward or backward
+
+        The distinction is arbitrary - if source has a lower ID
+        than the sink ID, it is conisidered forward.
+        """
+        return source < sink
+
     def build_geom(self):
         return WKTSpatialElement(
             "LINESTRING(%0.6f %0.6f, %0.6f %0.6f)" % (
@@ -105,6 +114,8 @@ class OSRMRouteStep(Base):
     route_hash = Column(BigInteger, primary_key=True)
     step_idx = Column(Integer, primary_key=True)
     edge_id = Column(BigInteger)
+    # Whether we traverse the edge high-low or low-high
+    forward = Column(Boolean)
 
 
 GeometryDDL(OSRMNode.__table__)
