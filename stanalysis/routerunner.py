@@ -10,7 +10,7 @@ import requests
 log = logging.getLogger(__name__)
 
 
-def generate_random_choices_forever(alist):
+def generate_random_choices_forever(alist, mcfunc):
     """ Generate random choices from a list
 
     Don't stop.  Ever.
@@ -23,17 +23,18 @@ def generate_random_choices_forever(alist):
         # protect against unlikely case
         if end_idx == start_idx:
             continue
-        yield (alist[start_idx], alist[end_idx])
+        if not mcfunc or mcfunc(alist[start_idx], alist[end_idx]):
+            yield (alist[start_idx], alist[end_idx])
 
 
-def generate_random_choices(N, alist):
+def generate_random_choices(N, alist, mcfunc=None):
     """ Generate random choices from a list
 
     :param: N - number of choices to generate
     :param: alist - a random access iterable to select from
 
     """
-    for i, output in enumerate(generate_random_choices_forever(alist)):
+    for i, output in enumerate(generate_random_choices_forever(alist, mcfunc)):
         if i >= N:
             break
         yield output

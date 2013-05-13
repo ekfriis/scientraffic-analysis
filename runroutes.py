@@ -79,6 +79,9 @@ if __name__ == "__main__":  # pragma: nocover
         nodes.append(x)
     nodes = numpy.array(nodes, dtype=int)
 
+    import pdb
+    pdb.set_trace()
+
     log.info("Spawning %i compute processes", args.threads)
     with futures.ProcessPoolExecutor(max_workers=args.threads) as executor:
         route_runner = functools.partial(
@@ -135,12 +138,9 @@ if __name__ == "__main__":  # pragma: nocover
                     )
                     ormed_steps.append(ormified_step)
                 session.add_all(ormed_steps)
-
+                session.commit()
                 route_count += 1
-                if route_count % commit_every == 0:
-                    session.commit()
-                    log.info("Committed %i routes", route_count)
+                log.info("Committed %i routes", route_count)
                 if route_count == args.N:
                     break
-            session.commit()
             log.info("Committed %i routes", route_count)
