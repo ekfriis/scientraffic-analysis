@@ -10,7 +10,7 @@ from stanalysis.routerunner import generate_random_choices, build_osrm_url,\
 def test_generate_random_choice():
     numpy.random.seed(0xDEADBEEF)
     eq_(list(generate_random_choices(5, range(10))),
-        [(8, 1), (2, 1), (2, 5), (1, 7), (4, 0)])
+        [(8, 1), (2, 1), (5, 1), (7, 4), (4, 0)])
 
 
 def test_build_osrm_url():

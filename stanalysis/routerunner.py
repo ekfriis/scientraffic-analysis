@@ -10,22 +10,33 @@ import requests
 log = logging.getLogger(__name__)
 
 
+def generate_random_choices_forever(alist):
+    """ Generate random choices from a list
+
+    Don't stop.  Ever.
+
+    :param: alist - a random access iterable to select from
+    """
+    while True:
+        start_idx = np.random.randint(0, len(alist)-1)
+        end_idx = np.random.randint(0, len(alist)-1)
+        # protect against unlikely case
+        if end_idx == start_idx:
+            continue
+        yield (alist[start_idx], alist[end_idx])
+
+
 def generate_random_choices(N, alist):
     """ Generate random choices from a list
 
     :param: N - number of choices to generate
     :param: alist - a random access iterable to select from
 
-    >>> np.random.seed(0xDEADBEEF)
-    >>>
     """
-    for _ in range(N):
-        start_idx = np.random.randint(0, len(alist)-1)
-        end_idx = np.random.randint(0, len(alist)-1)
-        # protect against unlikely case
-        while end_idx == start_idx:
-            end_idx = np.random.randint(0, len(alist)-1)
-        yield (alist[start_idx], alist[end_idx])
+    for i, output in enumerate(generate_random_choices_forever(alist)):
+        if i >= N:
+            break
+        yield output
 
 
 def build_osrm_url(coords, host, port):
