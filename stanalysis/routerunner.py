@@ -3,7 +3,9 @@
 Tools to run random routes using the OSRM
 """
 
+import itertools
 import logging
+import math
 import numpy as np
 import requests
 
@@ -37,6 +39,32 @@ def generate_random_choices(N, alist, mcfunc=None):
     for i, output in enumerate(generate_random_choices_forever(alist, mcfunc)):
         if i >= N:
             break
+        yield output
+
+
+def generate_random_choices_exponential(N, alist):
+    """ Generate random choices from a list
+
+    The list will be distributed according to an exponentially
+    falling distribution based on distances between the returned points.
+
+    :param: N - number of choices to generate
+    :param: alist - a random access iterable to select from
+
+    """
+    def distance(a, b):
+        return np.hypot(*(a - b))
+    pairs = itertools.izip(alist[:-1], alist[1:])
+    max_distance = max(map(lambda x: distance(x[0], x[1]), pairs))
+
+    def mc_selector(a, b):
+        throw = np.random.random_sample()
+        normalized_distance = distance(a, b) * 1./max_distance
+        if throw < math.exp(-normalized_distance):
+            return True
+        return False
+
+    for output in generate_random_choices(N, alist, mc_selector):
         yield output
 
 

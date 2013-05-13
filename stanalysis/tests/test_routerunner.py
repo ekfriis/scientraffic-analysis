@@ -5,7 +5,7 @@ import math
 from nose.tools import eq_
 
 from stanalysis.routerunner import generate_random_choices, build_osrm_url,\
-    parse_osrm_output
+    parse_osrm_output, generate_random_choices_exponential
 
 
 def test_generate_random_choice():
@@ -39,10 +39,16 @@ def test_generate_random_choice_weighted():
             return True
         return False
 
-    result = generate_random_choices(5, input_array, mc_selector)
+    result = list(generate_random_choices(5, input_array, mc_selector))
     eq_([(list(x[0]), list(x[1])) for x in result],
         [([8, 1], [2, 1]), ([5, 1], [2, 1]), ([8, 1], [7, 4]),
          ([7, 4], [8, 1]), ([7, 4], [8, 1])])
+
+    # Make sure we have the same implementation
+    numpy.random.seed(0xDEADBEEF)
+    standard_impl = list(generate_random_choices_exponential(5, input_array))
+    assert(numpy.array_equal(result, standard_impl))
+
 
 def test_build_osrm_url():
     eq_(build_osrm_url(((34E5, -118E5), (35E5, -118E5)), 'the_host', 9999),
