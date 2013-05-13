@@ -35,14 +35,16 @@ def test_generate_random_choice_weighted():
         throw = numpy.random.random_sample()
         normalized_distance = distance(a, b) * 1./max_distance
 
+        normalized_distance = (normalized_distance**2)
+
         if throw < math.exp(-normalized_distance):
             return True
         return False
 
     result = list(generate_random_choices(5, input_array, mc_selector))
     eq_([(list(x[0]), list(x[1])) for x in result],
-        [([8, 1], [2, 1]), ([5, 1], [2, 1]), ([8, 1], [7, 4]),
-         ([7, 4], [8, 1]), ([7, 4], [8, 1])])
+        [([8, 1], [2, 1]), ([5, 1], [2, 1]), ([7, 4], [8, 1]),
+         ([8, 1], [7, 4]), ([7, 4], [8, 1])])
 
     # Make sure we have the same implementation
     numpy.random.seed(0xDEADBEEF)

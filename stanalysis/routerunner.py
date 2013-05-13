@@ -60,7 +60,7 @@ def generate_random_choices_exponential(N, alist):
     def mc_selector(a, b):
         throw = np.random.random_sample()
         normalized_distance = distance(a, b) * 1./max_distance
-        if throw < math.exp(-normalized_distance):
+        if throw < math.exp(-(normalized_distance**2)):
             return True
         return False
 
@@ -110,6 +110,7 @@ def run_route(coords, host='localhost', port=5000):
 
     :param coords: 2-tuple of starting & ending (lat, lon)
     """
+    log.info("Running route from %s => %s", coords[0], coords[1])
     url = build_osrm_url(coords, host, port)
     response = requests.get(url)
     if response.status_code != 200:
