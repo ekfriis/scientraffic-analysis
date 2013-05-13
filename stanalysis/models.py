@@ -102,12 +102,9 @@ class OSRMRoute(Base):
 
 class OSRMRouteStep(Base):
     __tablename__ = "osrmroutestep"
-    route_hash = Column(BigInteger, ForeignKey('osrmroute.route_hash'),
-                        primary_key=True)
+    route_hash = Column(BigInteger, primary_key=True)
     step_idx = Column(Integer, primary_key=True)
-    edge_id = Column(BigInteger, ForeignKey("osrmedges.hash"), index=True)
-    route = relationship('OSRMRoute', backref='steps')
-    edge = relationship("OSRMEdge")
+    edge_id = Column(BigInteger)
 
 
 GeometryDDL(OSRMNode.__table__)
