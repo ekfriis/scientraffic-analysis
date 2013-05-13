@@ -72,7 +72,7 @@ class OSRMEdge(Base):
         The distinction is arbitrary - if source has a lower ID
         than the sink ID, it is conisidered forward.
         """
-        return source < sink
+        return bool(source < sink)
 
     def build_geom(self):
         return WKTSpatialElement(
