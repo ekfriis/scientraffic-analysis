@@ -1,0 +1,71 @@
+import logging
+
+import igraph
+from nose.tools import eq_
+
+import stanalysis.routegraph as rg
+
+logging.basicConfig(level=logging.WARNING)
+log = logging.getLogger(__name__)
+
+
+def test_delete_degree_1_vtxs():
+    g = igraph.Graph(directed=True)
+    # a square with a tail
+    g.add_vertices(5)
+    g.add_edges([
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 0),
+        (2, 4)  # the tail
+    ])
+    eq_(len(g.vs), 5)
+    eq_(len(g.es), 5)
+    eq_(len(g.vs.select(_degree_eq=1)), 1)
+    eq_(len(g.vs.select(_degree_eq=2)), 3)
+    eq_(len(g.vs.select(_degree_eq=3)), 1)
+    ret = rg.delete_degree_1_vtxs(g)
+    eq_(ret, 1)
+    # Now it is clean
+    eq_(len(g.vs), 4)
+    eq_(len(g.es), 4)
+    eq_(len(g.vs.select(_degree_eq=1)), 0)
+    eq_(len(g.vs.select(_degree_eq=2)), 4)
+    eq_(len(g.vs.select(_degree_eq=3)), 0)
+
+
+def test_collapse_degree_2_vtxs():
+    g = igraph.Graph(directed=True)
+    # a square with a diagonal + tail
+    g.add_vertices(5)
+    # the square
+    g.add_edges([
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 0),
+    ])
+    # the diagonal
+    g.add_edges([(0, 2)])
+    # the tail
+    g.add_edges([(1, 4)])
+    # so now vertex 3 is just a thru-node
+    eq_(len(g.vs), 5)
+    eq_(len(g.es), 6)
+
+    eq_(len(g.vs.select(_degree_eq=1)), 1)
+    eq_(len(g.vs.select(_degree_eq=2)), 1)
+    eq_(len(g.vs.select(_degree_eq=3)), 3)
+
+    ret = rg.collapse_degree_2_vtxs(g)
+    eq_(ret, 1)
+    # Now it is clean
+    eq_(len(g.vs), 4)
+    eq_(len(g.es), 5)
+    eq_(len(g.vs.select(_degree_eq=1)), 1)
+    eq_(len(g.vs.select(_degree_eq=2)), 0)
+    eq_(len(g.vs.select(_degree_eq=3)), 3)
+
+if __name__ == "__main__":
+    test_collapse_degree_2_vtxs()
