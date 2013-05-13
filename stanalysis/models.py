@@ -82,16 +82,6 @@ class OSRMEdgeGeom(Base):
     edge = relationship("OSRMEdge")
 
 
-def build_edge_geometries(session):
-    """ PostGIS query to generate the edge geometries """
-    session.execute("""INSERT INTO osrmedgegeom (
-        SELECT osrmedges.hash, ST_MakeLine(source.geom, sink.geom)
-        FROM osrmedges
-        INNER JOIN osrmnodes as source ON osrmedges.source = source.osm_id
-        INNER JOIN osrmnodes as sink ON osrmedges.sink = sink.osm_id
-    );""")
-
-
 class OSRMRoute(Base):
     """Definte a toy, random route, run using the OSRM engine"""
     __tablename__ = "osrmroute"
