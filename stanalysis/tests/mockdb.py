@@ -10,7 +10,7 @@ from geoalchemy import GeometryDDL
 
 from stanalysis.models import OSRMEdge, OSRMNode, Base  # flake8: noqa
 
-engine = create_engine('postgresql://osm:osm@localhost/osm_test', echo=False)
+engine = create_engine('postgresql://osm:osm@localhost/osm_test', echo=True)
 Session = sessionmaker(bind=engine)
 #session = Session()
 
