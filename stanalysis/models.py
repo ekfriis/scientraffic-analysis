@@ -132,6 +132,12 @@ class OSRMEdgeFrequencies(Base):
     forward = Column(Boolean, primary_key=True)
     freq = Column(BigInteger)
     geom = GeometryColumn(LineString(2), comparator=PGComparator)
+    edgeobj = relationship(
+        "OSRMEdge",
+        primaryjoin="OSRMEdgeFrequencies.edge == OSRMEdge.hash",
+        foreign_keys="OSRMEdge.hash",
+        uselist=False
+    )
 
 
 GeometryDDL(OSRMNode.__table__)
