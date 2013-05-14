@@ -73,5 +73,7 @@ def export_nodes(graph, session):
             product_out=reduce(mul, out_edges, 1),
             log_product_out=reduce(mul, (math.log(x) for x in out_edges), 1)
         ))
+        if i % 100 == 0:
+            session.flush()
     log.info("Committing nodes to DB")
     session.commit()
