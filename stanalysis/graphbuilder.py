@@ -56,7 +56,7 @@ def build_graph(session):
         (node_idx_lookup[start], node_idx_lookup[end])
         for start, end in data[:, (0, 1)]])
     log.info("Setting edge weights")
-    g.es['weight'] = data[:2]
+    g.es['weight'] = data[:, 2]
     return g
 
 

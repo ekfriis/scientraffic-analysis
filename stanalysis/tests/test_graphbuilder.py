@@ -46,13 +46,13 @@ def test_build_graph():
             geom=None
         )
         freq_21 = OSRMEdgeFrequencies(
-            edge=OSRMEdge.hash_edge(2, 1),
+            edge=OSRMEdge.hash_edge(1, 2),
             forward=False,
             freq=21,
             geom=None
         )
         freq_34 = OSRMEdgeFrequencies(
-            edge=OSRMEdge.hash_edge(3, 2),
+            edge=OSRMEdge.hash_edge(2, 3),
             forward=True,
             freq=32,
             geom=None
@@ -93,6 +93,11 @@ def test_build_graph():
         eq_(vtx_2.indegree(), 1)
         eq_(vtx_2.outdegree(), 3)
         eq_(vtx_2.degree(), 4)
+
+        # Check edge weights are correct
+        # vtx 0 is node 1
+        eq_(gt.output_weights(graph, 0), [12])
+        eq_(gt.output_weights(graph, 1), [21, 32, 24])
 
 
 def test_export_nodes():
