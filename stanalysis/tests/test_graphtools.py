@@ -84,6 +84,8 @@ def test_collapse_degree_2_vtxs_complex():
     # the center line
     g.add_edges([(1, 4)])
 
+    g.es["weight"] = [5 for x in range(7)]
+
     # so now vertex 5-0 and 2-3 are thru-ways
     eq_(len(g.vs), 6)
     eq_(len(g.es), 7)
@@ -96,6 +98,9 @@ def test_collapse_degree_2_vtxs_complex():
     eq_(len(g.vs), 2)
     eq_(len(g.es), 3)
     eq_(len(g.vs.select(_degree_eq=2)), 0)
+
+    # Edge weights should be respected
+    eq_(g.es["weight"], [5 for x in range(3)])
 
 
 def test_collapse_degree_2_vtxs_bollard():
