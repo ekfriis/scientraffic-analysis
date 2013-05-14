@@ -34,10 +34,17 @@ def test_freq_backref():
         geom=None
     )
     session.add(the_freq)
+    the_freq_backward = OSRMEdgeFrequencies(
+        edge=OSRMEdge.hash_edge(1, 2),
+        forward=False,
+        freq=11,
+        geom=None
+    )
+    session.add(the_freq_backward)
     session.commit()
 
     results = session.query(OSRMEdgeFrequencies).all()
-    eq_(len(results), 1)
+    eq_(len(results), 2)
     eq_(results[0].freq, 10)
     eq_(results[0].forward, True)
     # test join
