@@ -107,7 +107,7 @@ class OSRMRouteStep(Base):
     route_hash = Column(BigInteger, primary_key=True)
     step_idx = Column(Integer, primary_key=True)
     edge_id = Column(BigInteger)
-    # Whether we traverse the edge high-low or low-high
+    # Whether we traverse the edge high-low or low-high.
     forward = Column(Boolean)
     # We specify the joins manually, as we want to insert
     # into this table very quicly.
