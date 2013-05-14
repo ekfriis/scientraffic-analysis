@@ -9,7 +9,7 @@ from geoalchemy import \
     GeometryColumn, Point, LineString, WKTSpatialElement, GeometryDDL
 from geoalchemy.postgis import PGComparator
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, Boolean, ForeignKey, BigInteger
+from sqlalchemy import Column, Integer, Boolean, ForeignKey, BigInteger, Float
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -133,6 +133,16 @@ class OSRMEdgeFrequencies(Base):
     freq = Column(BigInteger)
     geom = GeometryColumn(LineString(2), comparator=PGComparator)
     edgeobj = relationship("OSRMEdge")
+
+
+class OSRMRouteNode(Base):
+    __tablename__ = "routenodes"
+    osm_id = Column(Integer, ForeignKey('osrmnodes.osm_id'), primary_key=True)
+    n_outputs = Column(Integer)
+    sum_out = Column(Integer)
+    product_out = Column(Integer)
+    log_product_out = Column(Float)
+    node = relationship("OSRMNode")
 
 
 GeometryDDL(OSRMNode.__table__)

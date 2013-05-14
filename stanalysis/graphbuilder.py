@@ -6,11 +6,14 @@ into iGraph format.
 """
 
 import logging
+import math
+from operator import mul
 
 import igraph
 import numpy as np
 
-from stanalysis.models import OSRMEdgeFrequencies, OSRMEdge
+from stanalysis.models import OSRMEdgeFrequencies, OSRMEdge, OSRMRouteNode
+import stanalysis.graphtools as gt
 
 log = logging.getLogger(__name__)
 
@@ -54,3 +57,19 @@ def build_graph(session):
     log.info("Setting edge weights")
     g.es['weight'] = data[:2]
     return g
+
+
+def export_nodes(graph, session):
+    log.info("Exporting %i nodes in the database", len(graph.vs))
+    for i, vtx in enumerate(graph.vs):
+        osm_id = vtx["osm_id"]
+        out_edges = gt.output_weights(graph, i)
+        session.add(OSRMRouteNode(
+            osm_id=osm_id,
+            n_outputs=len(out_edges),
+            sum_out=sum(out_edges),
+            product_out=reduce(mul, out_edges, 1),
+            log_product_out=reduce(mul, (math.log(x) for x in out_edges), 1)
+        ))
+    log.info("Committing nodes to DB")
+    session.commit()

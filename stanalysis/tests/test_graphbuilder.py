@@ -5,14 +5,18 @@ Test building the route-frequency graph from the database
 '''
 
 import logging
-from nose.tools import eq_
+import igraph
+import math
+from nose.tools import eq_, assert_almost_equal
 logging.basicConfig(level=logging.WARNING)
 
 log = logging.getLogger(__name__)
 
 from stanalysis.tests.mockdb import test_db_session
-from stanalysis.models import OSRMEdgeFrequencies, OSRMNode, OSRMEdge
-from stanalysis.graphbuilder import build_graph
+from stanalysis.models import OSRMEdgeFrequencies, OSRMNode, \
+    OSRMEdge, OSRMRouteNode
+from stanalysis.graphbuilder import build_graph, export_nodes
+import stanalysis.graphtools as gt
 
 
 def test_build_graph():
@@ -89,3 +93,38 @@ def test_build_graph():
         eq_(vtx_2.indegree(), 1)
         eq_(vtx_2.outdegree(), 3)
         eq_(vtx_2.degree(), 4)
+
+
+def test_export_nodes():
+    with test_db_session() as session:
+        g = igraph.Graph(directed=True)
+        # two boxes
+        g.add_vertices(6)
+        g.vs["osm_id"] = range(6)
+        # the outer rectange
+        g.add_edges([
+            (1, 0),
+            (0, 5),
+
+            (2, 1),
+            (2, 3),
+
+            (4, 3),
+            (4, 5),
+        ])
+        g.es["weight"] = [x + 1 for x in range(6)]
+
+        for i in range(6):
+            new_node = OSRMNode(i, 3400000, 11800000, False, False)
+            session.add(new_node)
+        session.commit()
+
+        export_nodes(g, session)
+
+        results = session.query(OSRMRouteNode).filter_by(osm_id=4).all()
+        eq_(gt.output_weights(g, 4), [5, 6])
+        eq_(results[0].n_outputs, 2)
+        eq_(results[0].sum_out, 5 + 6)
+        eq_(results[0].product_out, 5 * 6)
+        assert_almost_equal(results[0].log_product_out,
+                            math.log(5) * math.log(6))
