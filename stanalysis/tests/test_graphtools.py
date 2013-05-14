@@ -3,7 +3,7 @@ import logging
 import igraph
 from nose.tools import eq_
 
-import stanalysis.routegraph as rg
+import stanalysis.graphtools as gt
 
 logging.basicConfig(level=logging.WARNING)
 log = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ def test_delete_degree_1_vtxs():
     eq_(len(g.vs.select(_degree_eq=1)), 1)
     eq_(len(g.vs.select(_degree_eq=2)), 3)
     eq_(len(g.vs.select(_degree_eq=3)), 1)
-    ret = rg.delete_degree_1_vtxs(g)
+    ret = gt.delete_degree_1_vtxs(g)
     eq_(ret, 1)
     # Now it is clean
     eq_(len(g.vs), 4)
@@ -58,7 +58,7 @@ def test_collapse_degree_2_vtxs():
     eq_(len(g.vs.select(_degree_eq=2)), 1)
     eq_(len(g.vs.select(_degree_eq=3)), 3)
 
-    ret = rg.collapse_degree_2_vtxs(g)
+    ret = gt.collapse_degree_2_vtxs(g)
     eq_(ret, 1)
     # Now it is clean
     eq_(len(g.vs), 4)
@@ -88,7 +88,7 @@ def test_collapse_degree_2_vtxs_complex():
     eq_(len(g.vs), 6)
     eq_(len(g.es), 7)
 
-    ret = rg.collapse_degree_2_vtxs(g)
+    ret = gt.collapse_degree_2_vtxs(g)
     # deleted 4
     eq_(ret, 4)
 
