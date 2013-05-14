@@ -35,6 +35,32 @@ def test_delete_degree_1_vtxs():
     eq_(len(g.vs.select(_degree_eq=3)), 0)
 
 
+def test_delete_degree_0_vtxs():
+    g = igraph.Graph(directed=True)
+    # a square with a tail
+    g.add_vertices(5)
+    g.add_edges([
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 0),
+    ])
+    eq_(len(g.vs), 5)
+    eq_(len(g.es), 4)
+    eq_(len(g.vs.select(_degree_eq=0)), 1)
+    eq_(len(g.vs.select(_degree_eq=1)), 0)
+    eq_(len(g.vs.select(_degree_eq=2)), 4)
+    eq_(len(g.vs.select(_degree_eq=3)), 0)
+    ret = gt.delete_degree_0_vtxs(g)
+    eq_(ret, 1)
+    # Now it is clean
+    eq_(len(g.vs), 4)
+    eq_(len(g.es), 4)
+    eq_(len(g.vs.select(_degree_eq=0)), 0)
+    eq_(len(g.vs.select(_degree_eq=2)), 4)
+    eq_(len(g.vs.select(_degree_eq=3)), 0)
+
+
 def test_collapse_degree_2_vtxs():
     g = igraph.Graph(directed=True)
     # a square with a diagonal + tail

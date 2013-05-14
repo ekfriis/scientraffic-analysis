@@ -29,6 +29,17 @@ def delete_degree_1_vtxs(graph):
     return len(tails)
 
 
+def delete_degree_0_vtxs(graph):
+    """ Remove all isolated points.
+
+    Returns number of points removed.
+
+    """
+    loners = graph.vs.select(_degree_eq=0)
+    graph.delete_vertices(loners)
+    return len(loners)
+
+
 def is_bollard(vtx):
     """ Returns true if the vtx is pure-source or pure-sink """
     return vtx.degree() and (not vtx.indegree() or not vtx.outdegree())
