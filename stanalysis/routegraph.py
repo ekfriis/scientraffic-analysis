@@ -7,6 +7,8 @@ Tools for converting the edge frequency columns into graphs.
 
 import logging
 
+import igraph
+
 log = logging.getLogger(__name__)
 
 
@@ -36,7 +38,8 @@ def collapse_degree_2_vtxs(graph):
     string_edges = []
 
     # separate thruways
-    components = subgraph.components()
+    components = subgraph.components(mode=igraph.WEAK)
+
     for component in components:
         tips = subgraph.vs[component].select(_degree_lt=2)
         assert(0 < len(tips) < 3)
@@ -54,12 +57,12 @@ def collapse_degree_2_vtxs(graph):
             predecessors = graph.predecessors(end_idx)
             successors = graph.successors(end_idx)
             for neighbor in predecessors:
-                assert(in_node is None)
                 if graph.degree(neighbor) > 2:
+                    assert(in_node is None)
                     in_node = neighbor
             for neighbor in successors:
-                assert(out_node is None)
                 if graph.degree(neighbor) > 2:
+                    assert(out_node is None)
                     out_node = neighbor
 
         # add an edge skipping over all the thru nodes

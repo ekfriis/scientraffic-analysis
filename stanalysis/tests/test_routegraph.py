@@ -67,5 +67,35 @@ def test_collapse_degree_2_vtxs():
     eq_(len(g.vs.select(_degree_eq=2)), 0)
     eq_(len(g.vs.select(_degree_eq=3)), 3)
 
+
+def test_collapse_degree_2_vtxs_complex():
+    g = igraph.Graph(directed=True)
+    # two boxes
+    g.add_vertices(6)
+    # the outer rectange
+    g.add_edges([
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 4),
+        (4, 5),
+        (5, 0),
+    ])
+    # the center line
+    g.add_edges([(1, 4)])
+
+    # so now vertex 5-0 and 2-3 are thru-ways
+    eq_(len(g.vs), 6)
+    eq_(len(g.es), 7)
+
+    ret = rg.collapse_degree_2_vtxs(g)
+    # deleted 4
+    eq_(ret, 4)
+
+    # Now it is clean
+    eq_(len(g.vs), 2)
+    eq_(len(g.es), 3)
+    eq_(len(g.vs.select(_degree_eq=2)), 0)
+
 if __name__ == "__main__":
     test_collapse_degree_2_vtxs()
