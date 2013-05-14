@@ -155,5 +155,33 @@ def test_collapse_degree_2_vtxs_bollard():
     eq_(len(g.es), 5)
     eq_(len(g.vs.select(_degree_eq=2, _indegree_gt=0, _outdegree_gt=0)), 0)
 
+
+def test_output_weights():
+    g = igraph.Graph(directed=True)
+    # two boxes
+    g.add_vertices(6)
+    # the outer rectange
+    g.add_edges([
+        (1, 0),
+        (0, 5),
+
+        (2, 1),
+        (2, 3),
+
+        (4, 3),
+        (4, 5),
+    ])
+    g.es["weight"] = range(6)
+
+    # 1->0
+    eq_(gt.output_weights(g, 1), [0])
+
+    # 2->1 2->3
+    eq_(gt.output_weights(g, 2), [2, 3])
+
+    # bollard
+    eq_(gt.output_weights(g, 5), [])
+
+
 if __name__ == "__main__":
     test_collapse_degree_2_vtxs()

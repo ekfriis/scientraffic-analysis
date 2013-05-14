@@ -12,6 +12,12 @@ import igraph
 log = logging.getLogger(__name__)
 
 
+def output_weights(graph, vtx_idx):
+    """ Get the weights of a vertex' outgoing edges """
+    out_edges = graph.incident(vtx_idx, mode=igraph.OUT)
+    return graph.es[out_edges]["weight"]
+
+
 def delete_degree_1_vtxs(graph):
     """ Remove all tails (i.e. non-loop) paths from a graph.
 
