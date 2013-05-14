@@ -31,34 +31,42 @@ def test_build_graph():
         session.add(node3)
         session.add(node4)
 
-        edge_12 = OSRMEdge(1, 2, 5, 5, False)
+        # The source-sink nodes aren't necessarily
+        # in "forward" order.
+        edge_12 = OSRMEdge(2, 1, 5, 5, False)
         edge_23 = OSRMEdge(2, 3, 5, 5, False)
-        edge_24 = OSRMEdge(2, 4, 5, 5, False)
+        edge_24 = OSRMEdge(4, 2, 5, 5, False)
 
         session.add_all([edge_12, edge_23, edge_24])
 
         session.commit()
 
+        # The combination of the hash + forward
+        # nature should define the edge frequency.
         freq_12 = OSRMEdgeFrequencies(
             edge=OSRMEdge.hash_edge(1, 2),
+            # 1->2
             forward=True,
             freq=12,
             geom=None
         )
         freq_21 = OSRMEdgeFrequencies(
             edge=OSRMEdge.hash_edge(1, 2),
+            # 2->1
             forward=False,
             freq=21,
             geom=None
         )
         freq_34 = OSRMEdgeFrequencies(
             edge=OSRMEdge.hash_edge(2, 3),
+            # 2-> 3
             forward=True,
             freq=32,
             geom=None
         )
         freq_24 = OSRMEdgeFrequencies(
             edge=OSRMEdge.hash_edge(2, 4),
+            # This means 2->4
             forward=True,
             freq=24,
             geom=None
