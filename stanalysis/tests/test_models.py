@@ -138,14 +138,9 @@ def test_insert_osrm_routestep():
     eq_(steps[0].forward, True)
     eq_(steps[1].step_idx, 1)
     eq_(steps[1].forward, False)
+    eq_(steps[0].edge.source_node.lon, 2)
+    eq_(steps[0].edge.source_node.lat, 1)
 
-    # Fixme - see if we can make a relationship w/o fkey constraint
-    #eq_(len(result[0].steps), 2)
-    #eq_(result[0].steps[0].edge.source_node.lon, 2)
-    #eq_(result[0].steps[0].edge.source_node.lat, 1)
-    #eq_(result[0].steps[0].edge.sink_node.lon, 4)
-    #eq_(result[0].steps[0].edge.sink_node.lat, 3)
-    #eq_(result[0].steps[1].route.duration, 6)
     session.close()
     drop_tables()
 

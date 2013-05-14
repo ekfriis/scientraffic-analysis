@@ -116,7 +116,14 @@ class OSRMRouteStep(Base):
     edge_id = Column(BigInteger)
     # Whether we traverse the edge high-low or low-high
     forward = Column(Boolean)
-
+    # We specify the joins manually, as we want to insert
+    # into this table very quicly.
+    edge = relationship(
+        "OSRMEdge",
+        primaryjoin="OSRMRouteStep.edge_id == OSRMEdge.hash",
+        foreign_keys="OSRMEdge.hash",
+        uselist=False
+    )
 
 GeometryDDL(OSRMNode.__table__)
 GeometryDDL(OSRMEdge.__table__)
