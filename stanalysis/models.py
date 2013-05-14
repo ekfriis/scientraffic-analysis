@@ -125,6 +125,16 @@ class OSRMRouteStep(Base):
         uselist=False
     )
 
+
+class OSRMEdgeFrequencies(Base):
+    __tablename__ = "edgefrequencies"
+    edge = Column(BigInteger, primary_key=True)
+    forward = Column(Boolean, primary_key=True)
+    freq = Column(BigInteger)
+    geom = GeometryColumn(LineString(2), comparator=PGComparator)
+
+
 GeometryDDL(OSRMNode.__table__)
 GeometryDDL(OSRMEdge.__table__)
 GeometryDDL(OSRMEdgeGeom.__table__)
+GeometryDDL(OSRMEdgeFrequencies.__table__)
