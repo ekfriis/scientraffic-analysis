@@ -67,10 +67,14 @@ def collapse_degree_2_vtxs(graph):
     log.info("Identified end-nodes of thru-node strings")
 
     new_edges = []
+    new_weights = []
     # find all non-thruway nodes, connected to the ends.
     for component, string in string_edges:
         in_node = None
         out_node = None
+        # These should be the same, as flow is conserved.
+        in_weight = None
+        out_weight = None
         for end_idx, indegree, outdegree in string:
             predecessors = graph.predecessors(end_idx)
             successors = graph.successors(end_idx)
@@ -80,19 +84,33 @@ def collapse_degree_2_vtxs(graph):
                 if neighbor_vtx.degree() > 2 or is_bollard(neighbor_vtx):
                     assert(in_node is None)
                     in_node = neighbor
+                    edge = graph.get_eid(in_node, end_idx)
+                    in_weight = graph.es[edge]["weight"]
 
             for neighbor in successors:
                 neighbor_vtx = graph.vs[neighbor]
                 if neighbor_vtx.degree() > 2 or is_bollard(neighbor_vtx):
                     assert(out_node is None)
                     out_node = neighbor
+                    edge = graph.get_eid(end_idx, out_node)
+                    out_weight = graph.es[edge]["weight"]
 
         # add an edge skipping over all the thru nodes
-        log.debug("Connecting %s => %s", in_node, out_node)
+        log.debug("Connecting %s => %s, with weight %s (%s)",
+                  in_node, out_node, in_weight, out_weight)
         new_edges.append((in_node, out_node))
+        new_weights.append(in_weight)
+        if in_weight != out_weight:
+            log.error("The inbound edge %s does not equal the outbound %s",
+                      in_weight, out_weight)
 
     log.info("Making %i new edge connections", len(new_edges))
     graph.add_edges(new_edges)
+    #print graph.es["weight"], graph.es["weight"][:-len(new_edges)]
+    #print graph.es["weight"][:-len(new_edges)] + new_weights
+    graph.es["weight"] = graph.es["weight"][:-len(new_edges)] + new_weights
+    #print graph.es[-2].tuple
+    #print graph.es[-1].tuple
 
     # Now delete all the thru_nodes
     log.info("Deleting %i thru-nodes", len(thru_nodes))

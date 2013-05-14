@@ -50,6 +50,7 @@ def test_collapse_degree_2_vtxs():
     g.add_edges([(0, 2)])
     # the tail
     g.add_edges([(1, 4)])
+    g.es["weight"] = range(6)
     # so now vertex 3 is just a thru-node
     eq_(len(g.vs), 5)
     eq_(len(g.es), 6)
@@ -84,7 +85,21 @@ def test_collapse_degree_2_vtxs_complex():
     # the center line
     g.add_edges([(1, 4)])
 
-    g.es["weight"] = [5 for x in range(7)]
+    # This makes it so all collapsed edges
+    # have conserved flow.
+    g.es["weight"] = [
+        3,
+        4,
+        4,
+        4,
+        3,
+        3,
+        2
+    ]
+
+    eq_(g.es[g.get_eid(1, 4)]["weight"], 2)
+    eq_(g.es[g.get_eid(0, 1)]["weight"], 3)
+    eq_(g.es[g.get_eid(1, 2)]["weight"], 4)
 
     # so now vertex 5-0 and 2-3 are thru-ways
     eq_(len(g.vs), 6)
@@ -100,7 +115,7 @@ def test_collapse_degree_2_vtxs_complex():
     eq_(len(g.vs.select(_degree_eq=2)), 0)
 
     # Edge weights should be respected
-    eq_(g.es["weight"], [5 for x in range(3)])
+    eq_(g.es["weight"], [2, 3, 4])
 
 
 def test_collapse_degree_2_vtxs_bollard():
@@ -144,6 +159,7 @@ def test_collapse_degree_2_vtxs_bollard():
     # vertex 5 and 2 are bollards
     eq_(len(g.vs), 6)
     eq_(len(g.es), 7)
+    g.es["weight"] = range(7)
 
     assert(gt.is_bollard(g.vs[2]))
     assert(gt.is_bollard(g.vs[5]))
