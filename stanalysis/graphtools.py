@@ -58,6 +58,9 @@ def collapse_degree_2_vtxs(graph):
                  graph.vs[tips["original_idx"]].indegree(),
                  graph.vs[tips["original_idx"]].outdegree())))
 
+    log.info("Identified end-nodes of thru-node strings")
+
+    new_edges = []
     # find all non-thruway nodes, connected to the ends.
     for component, string in string_edges:
         in_node = None
@@ -80,8 +83,12 @@ def collapse_degree_2_vtxs(graph):
 
         # add an edge skipping over all the thru nodes
         log.debug("Connecting %s => %s", in_node, out_node)
-        graph.add_edge(in_node, out_node)
+        new_edges.append((in_node, out_node))
+
+    log.info("Making %i new edge connections", len(new_edges))
+    graph.add_edges(new_edges)
 
     # Now delete all the thru_nodes
+    log.info("Deleting %i thru-nodes", len(thru_nodes))
     graph.delete_vertices(thru_nodes)
     return len(thru_nodes)
