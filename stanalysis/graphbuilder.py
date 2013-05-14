@@ -28,10 +28,16 @@ def query_data(session):
         OSRMEdgeFrequencies.freq,
         OSRMEdgeFrequencies.forward).join(OSRMEdgeFrequencies)
     for start, end, freq, forward in query:
-        if forward:
+        natural_order = OSRMEdge.is_forward(start, end)
+        # There is a smarter to way to do this, but my brain is bent.
+        if forward and natural_order:
             yield (start, end, freq)
-        else:
+        elif forward and not natural_order:
             yield (end, start, freq)
+        elif not forward and natural_order:
+            yield (end, start, freq)
+        else:
+            yield (start, end, freq)
 
 
 def build_graph(session):

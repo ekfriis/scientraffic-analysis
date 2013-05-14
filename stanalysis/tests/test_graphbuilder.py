@@ -78,8 +78,8 @@ def test_build_graph():
 
         results = session.query(OSRMEdgeFrequencies).all()
         eq_(len(results), 4)
-        eq_(results[0].edgeobj.source, 1)
-        eq_(results[0].edgeobj.sink, 2)
+        eq_(results[0].edgeobj.source, 2)
+        eq_(results[0].edgeobj.sink, 1)
 
         graph = build_graph(session)
 
