@@ -1,6 +1,6 @@
 '''
 
-Test the edge frequency table access
+Test the edge frequency table access/insertion/joins
 
 '''
 
