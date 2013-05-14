@@ -106,19 +106,44 @@ def test_collapse_degree_2_vtxs_bollard():
     # the outer rectange
     g.add_edges([
         (1, 0),
+        (0, 5),
+
         (2, 1),
         (2, 3),
+
         (3, 4),
         (4, 5),
-        (0, 5),
     ])
     # the center line
-    g.add_edges([(1, 4)])
+    g.add_edges([(4, 1)])
+
+    eq_(g.vs[0].indegree(), 1)
+    eq_(g.vs[0].outdegree(), 1)
+
+    eq_(g.vs[5].indegree(), 2)
+    eq_(g.vs[5].outdegree(), 0)
+
+    eq_(g.vs[1].indegree(), 2)
+    eq_(g.vs[1].outdegree(), 1)
+
+    eq_(g.vs[2].indegree(), 0)
+    eq_(g.vs[2].outdegree(), 2)
+
+    eq_(g.vs[3].indegree(), 1)
+    eq_(g.vs[3].outdegree(), 1)
+
+    eq_(g.vs[4].indegree(), 1)
+    eq_(g.vs[4].outdegree(), 2)
 
     # so now vertex 0 and 3 are thru-ways
     # vertex 5 and 2 are bollards
     eq_(len(g.vs), 6)
     eq_(len(g.es), 7)
+
+    assert(gt.is_bollard(g.vs[2]))
+    assert(gt.is_bollard(g.vs[5]))
+    assert(not gt.is_bollard(g.vs[1]))
+    assert(not gt.is_bollard(g.vs[3]))
 
     ret = gt.collapse_degree_2_vtxs(g)
     # deleted 4
@@ -126,8 +151,9 @@ def test_collapse_degree_2_vtxs_bollard():
 
     # Now it is clean
     eq_(len(g.vs), 4)
+    print [es.tuple for es in g.es]
     eq_(len(g.es), 5)
-    eq_(len(g.vs.select(_degree_eq=2)), 0)
+    eq_(len(g.vs.select(_degree_eq=2, _indegree_gt=0, _outdegree_gt=0)), 0)
 
 if __name__ == "__main__":
     test_collapse_degree_2_vtxs()

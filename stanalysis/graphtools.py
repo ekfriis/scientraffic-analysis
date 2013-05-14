@@ -23,6 +23,11 @@ def delete_degree_1_vtxs(graph):
     return len(tails)
 
 
+def is_bollard(vtx):
+    """ Returns true if the vtx is pure-source or pure-sink """
+    return vtx.degree() and (not vtx.indegree() or not vtx.outdegree())
+
+
 def collapse_degree_2_vtxs(graph):
     """ Collapse degree 2 vertices in a graph
 
@@ -30,7 +35,8 @@ def collapse_degree_2_vtxs(graph):
     Returns number of nodes removed.
     """
     # Find list of all thru-nodes
-    thru_nodes = graph.vs.select(_degree_eq=2)
+    thru_nodes = graph.vs.select(_degree_eq=2, _indegree_gt=0, _outdegree_gt=0)
+    log.info("Found %i thru-nodes", len(thru_nodes))
     subgraph = graph.subgraph(thru_nodes.indices)
     subgraph.vs["original_idx"] = thru_nodes.indices
 
@@ -39,6 +45,8 @@ def collapse_degree_2_vtxs(graph):
 
     # separate thruways
     components = subgraph.components(mode=igraph.WEAK)
+    log.info("Found %i weakly-connected components in subgraph",
+             len(components))
 
     for icomp, component in enumerate(components):
         tips = subgraph.vs[component].select(_degree_lt=2)
@@ -57,16 +65,21 @@ def collapse_degree_2_vtxs(graph):
         for end_idx, indegree, outdegree in string:
             predecessors = graph.predecessors(end_idx)
             successors = graph.successors(end_idx)
+
             for neighbor in predecessors:
-                if graph.degree(neighbor) > 2:
+                neighbor_vtx = graph.vs[neighbor]
+                if neighbor_vtx.degree() > 2 or is_bollard(neighbor_vtx):
                     assert(in_node is None)
                     in_node = neighbor
+
             for neighbor in successors:
-                if graph.degree(neighbor) > 2:
+                neighbor_vtx = graph.vs[neighbor]
+                if neighbor_vtx.degree() > 2 or is_bollard(neighbor_vtx):
                     assert(out_node is None)
                     out_node = neighbor
 
         # add an edge skipping over all the thru nodes
+        log.debug("Connecting %s => %s", in_node, out_node)
         graph.add_edge(in_node, out_node)
 
     # Now delete all the thru_nodes
