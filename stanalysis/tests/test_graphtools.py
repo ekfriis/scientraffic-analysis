@@ -203,6 +203,54 @@ def test_collapse_degree_2_vtxs_bollard():
     eq_(len(g.vs.select(_degree_eq=2, _indegree_gt=0, _outdegree_gt=0)), 0)
 
 
+def test_collapse_bidirectional_streets():
+    g = igraph.Graph(directed=True)
+    # Make a 1x3 rectangle, where the length-3 edges are bidirectional
+    g.add_vertices(8)
+
+    # unidirectional ends
+    g.add_edges([
+        (0, 1),
+        (4, 5)
+    ])
+
+    # bidirectional side #1.  Let's make it
+    # so only 2/3 of this side is bi-directional
+    g.add_edges([
+        # zero has degree 3
+        (0, 7),
+        (7, 0),
+        (6, 7),
+        (7, 6),
+        (6, 5),
+        # missing (5, 6), so we should
+        # only collapse node 7.
+    ])
+    # fully bidirectional side #2.
+    g.add_edges([
+        # one has degree 3
+        (1, 2),
+        (2, 1),
+        (2, 3),
+        (3, 2),
+        (3, 4),
+        (4, 3),
+    ])
+    # sides have flow=2
+    # top has flow=3
+    # bottom has flow=4
+    g.es["weight"] = [2]*2 + [3]*5 + [4]*6
+
+    eq_(len(g.vs), 8)
+    eq_(len(g.es), 13)
+
+    ret = gt.collapse_bidirectional_streets(g)
+
+    eq_(ret, 3)
+    eq_(len(g.vs), 5)
+    eq_(len(g.es), 7)
+
+
 def test_output_weights():
     g = igraph.Graph(directed=True)
     # two boxes

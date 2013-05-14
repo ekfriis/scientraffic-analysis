@@ -46,9 +46,12 @@ def main(args):
     g = build_graph(session)
 
     if args.prune:
-        log.info("Collapsing edges")
+        log.info("Collapsing unidirectional strings")
         pruned = graphtools.collapse_degree_2_vtxs(g)
-        log.info("Removed %i edges", pruned)
+        log.info("Removed %i thru-nodes", pruned)
+        log.info("Collapsing bidirectional strings")
+        pruned = graphtools.collapse_bidirectional_streets(g)
+        log.info("Removed %i thru-nodes", pruned)
         log.info("Snipping tails")
         snipped = graphtools.delete_degree_1_vtxs(g)
         log.info("Removed %i tails", snipped)
