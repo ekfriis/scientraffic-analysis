@@ -5,7 +5,7 @@
 
 DROP TABLE edgefrequencies;
 
-SELECT 
+EXPLAIN SELECT 
   step.edge_id AS edge, 
   step.forward AS forward, 
   COUNT(*) AS freq,
@@ -17,3 +17,13 @@ FROM
 INNER JOIN 
   osrmedgegeoms AS geoms ON geoms.hash = step.edge_id
 GROUP BY step.edge_id, step.forward, geoms.geom;
+
+EXPLAIN SELECT 
+  step.edge_id AS edge, 
+  step.forward AS forward, 
+  COUNT(*) AS freq
+INTO 
+  edgefrequencies
+FROM 
+  osrmroutesteps AS step
+GROUP BY step.edge_id, step.forward;
