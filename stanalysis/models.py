@@ -74,13 +74,6 @@ class OSRMEdge(Base):
         """
         return bool(source < sink)
 
-    def build_geom(self):
-        return WKTSpatialElement(
-            "LINESTRING(%0.6f %0.6f, %0.6f %0.6f)" % (
-                self.source_node.lon/1E5, self.source_node.lat/1E5,
-                self.sink_node.lon/1E5, self.sink_node.lat/1E5,
-            ))
-
 
 class OSRMEdgeGeom(Base):
     """Define a edge geometry between 2 nodes in the routing network"""
