@@ -117,4 +117,4 @@ def run_route(coords, host='localhost', port=5000):  # pragma: nocover
         log.error("Route lookup with %s failed with %i.",
                   url, response.status_code)
         return None
-    return coords, parse_osrm_output(response)
+    return coords, url, parse_osrm_output(response)

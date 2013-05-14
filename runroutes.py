@@ -98,7 +98,7 @@ if __name__ == "__main__":  # pragma: nocover
             commit_every = 20
             for route in executor.map(route_runner, routes_to_run):
 
-                coords, steps = route
+                coords, query_url, steps = route
 
                 if not len(steps):
                     log.error("No steps returned for route: %s", coords)
@@ -116,6 +116,7 @@ if __name__ == "__main__":  # pragma: nocover
                     end_lon=coords[1][1],
                     duration=steps[:, 1].sum(),
                     nsteps=len(steps),
+                    query=query_url,
                 )
 
                 session.add(ormified_route)

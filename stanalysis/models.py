@@ -9,7 +9,8 @@ from geoalchemy import \
     GeometryColumn, Point, LineString, WKTSpatialElement, GeometryDDL
 from geoalchemy.postgis import PGComparator
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, Boolean, ForeignKey, BigInteger, Float
+from sqlalchemy import Integer, Boolean, BigInteger, Float, String
+from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -95,6 +96,7 @@ class OSRMRoute(Base):
     end_lon = Column(Integer)
     duration = Column(Integer)
     nsteps = Column(Integer)
+    query = Column(String(200))
 
     @staticmethod
     def hash_route(*xs):

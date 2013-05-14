@@ -66,7 +66,8 @@ def test_insert_osrm_route():
     with test_db_session() as session:
         route_hash = OSRMRoute.hash_route(1)
         route = OSRMRoute(route_hash=route_hash, start_lat=2, start_lon=3,
-                          end_lat=4, end_lon=5, duration=6, nsteps=7)
+                          end_lat=4, end_lon=5, duration=6, nsteps=7,
+                          query='a long query string that you can set')
         session.add(route)
         session.commit()
         result = session.query(OSRMRoute).filter(
@@ -77,6 +78,7 @@ def test_insert_osrm_route():
         eq_(len(result), 1)
         eq_(result[0].start_lat, 2)
         eq_(result[0].nsteps, 7)
+        eq_(result[0].query, 'a long query string that you can set')
 
 
 def test_insert_osrm_routestep():
