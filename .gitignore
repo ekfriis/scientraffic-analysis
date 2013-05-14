@@ -5,6 +5,9 @@ venv/
 # Results Direcotries
 lax/
 
+#Intermediate stuff
+*.pickle
+
 *.py[cod]
 
 # C extensions
@@ -40,3 +43,4 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
