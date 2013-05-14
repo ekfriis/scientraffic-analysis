@@ -35,6 +35,7 @@ def query_data(session):
 
 
 def build_graph(session):
+    """Query OSRMEdge frequency information and build an iGraph"""
     log.info("Querying data")
     data = np.array(list(query_data(session)), dtype=int)
 
@@ -60,6 +61,7 @@ def build_graph(session):
 
 
 def export_nodes(graph, session):
+    """Store out-degree information about nodes as OSRMRouteNodes"""
     log.info("Exporting %i nodes in the database", len(graph.vs))
     for i, vtx in enumerate(graph.vs):
         osm_id = vtx["osm_id"]
