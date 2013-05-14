@@ -100,7 +100,7 @@ def parse_osrm_output(response):
     return np.array(response.json()['raw_data'], dtype=int)
 
 
-def run_route(coords, host='localhost', port=5000):
+def run_route(coords, host='localhost', port=5000):  # pragma: nocover
     """Query an OSRM server for a route
 
     Returns the (decoded) JSON `output from OSRM`_.

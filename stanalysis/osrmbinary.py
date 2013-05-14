@@ -63,10 +63,10 @@ def unpack_osrm_data(DataType, inputfd, offset=0):
     datum_size = DataType.PACKING.size
     for i in range(num_objects):
         data = inputfd.read(datum_size)
-        if not data:
+        if not data:  # pragma: nocover
             # EOF
             break
-        if len(data) < datum_size:
+        if len(data) < datum_size:  # pragma: nocover
             raise IOError(
                 "datum #%i, expected length %i, got %i, (%s)" %
                 (i, datum_size, len(data), data))
