@@ -31,7 +31,7 @@ def collapse_degree_2_vtxs(graph):
     """
     # Find list of all thru-nodes
     thru_nodes = graph.vs.select(_degree_eq=2)
-    subgraph = graph.subgraph(thru_nodes, )
+    subgraph = graph.subgraph(thru_nodes.indices)
     subgraph.vs["original_idx"] = thru_nodes.indices
 
     # The 1-2 end nodes on each thru-way string
@@ -40,17 +40,18 @@ def collapse_degree_2_vtxs(graph):
     # separate thruways
     components = subgraph.components(mode=igraph.WEAK)
 
-    for component in components:
+    for icomp, component in enumerate(components):
         tips = subgraph.vs[component].select(_degree_lt=2)
         assert(0 < len(tips) < 3)
-        string_edges.append(zip(
-            tips["original_idx"],
-            graph.vs[tips["original_idx"]].indegree(),
-            graph.vs[tips["original_idx"]].outdegree(),
-        ))
+        string_edges.append(
+            (icomp,  # for debugging
+             zip(
+                 tips["original_idx"],
+                 graph.vs[tips["original_idx"]].indegree(),
+                 graph.vs[tips["original_idx"]].outdegree())))
 
     # find all non-thruway nodes, connected to the ends.
-    for string in string_edges:
+    for component, string in string_edges:
         in_node = None
         out_node = None
         for end_idx, indegree, outdegree in string:
