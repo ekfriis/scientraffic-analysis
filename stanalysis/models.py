@@ -138,6 +138,7 @@ class OSRMRouteNode(Base):
     sum_out = Column(Integer)
     product_out = Column(BigInteger)
     log_sum_out = Column(Float)
+    redundant = Column(Boolean)
     node = relationship("OSRMNode")
 
 

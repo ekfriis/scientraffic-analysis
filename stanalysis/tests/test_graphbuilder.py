@@ -126,6 +126,7 @@ def test_export_nodes():
             (4, 5),
         ])
         g.es["weight"] = [x + 1 for x in range(6)]
+        g.vs["redundant"] = [False for _ in range(6)]
 
         for i in range(6):
             new_node = OSRMNode(i, 3400000, 11800000, False, False)

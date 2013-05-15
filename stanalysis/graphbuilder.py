@@ -78,7 +78,8 @@ def export_nodes(graph, session):
             n_inputs=len(vtx.successors()),
             sum_out=sum(out_edges),
             product_out=reduce(mul, out_edges, 1),
-            log_sum_out=sum(math.log(x) for x in out_edges)
+            log_sum_out=sum(math.log(x) for x in out_edges),
+            redundant=vtx["redundant"]
         ))
         if i % 100 == 0:
             session.flush()
