@@ -75,9 +75,10 @@ def export_nodes(graph, session):
         session.add(OSRMRouteNode(
             osm_id=osm_id,
             n_outputs=len(out_edges),
+            n_inputs=len(vtx.successors()),
             sum_out=sum(out_edges),
             product_out=reduce(mul, out_edges, 1),
-            log_product_out=reduce(mul, (math.log(x) for x in out_edges), 1)
+            log_sum_out=sum(math.log(x) for x in out_edges)
         ))
         if i % 100 == 0:
             session.flush()

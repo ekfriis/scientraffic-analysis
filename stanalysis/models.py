@@ -134,9 +134,10 @@ class OSRMRouteNode(Base):
     __tablename__ = "routenodes"
     osm_id = Column(Integer, ForeignKey('osrmnodes.osm_id'), primary_key=True)
     n_outputs = Column(Integer)
+    n_inputs = Column(Integer)
     sum_out = Column(Integer)
     product_out = Column(BigInteger)
-    log_product_out = Column(Float)
+    log_sum_out = Column(Float)
     node = relationship("OSRMNode")
 
 

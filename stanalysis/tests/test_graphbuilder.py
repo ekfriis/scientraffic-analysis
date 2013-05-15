@@ -139,5 +139,5 @@ def test_export_nodes():
         eq_(results[0].n_outputs, 2)
         eq_(results[0].sum_out, 5 + 6)
         eq_(results[0].product_out, 5 * 6)
-        assert_almost_equal(results[0].log_product_out,
-                            math.log(5) * math.log(6))
+        assert_almost_equal(results[0].log_sum_out,
+                            math.log(5) + math.log(6))
