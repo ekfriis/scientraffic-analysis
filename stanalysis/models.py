@@ -135,7 +135,7 @@ class OSRMRouteNode(Base):
     osm_id = Column(Integer, ForeignKey('osrmnodes.osm_id'), primary_key=True)
     n_outputs = Column(Integer)
     sum_out = Column(Integer)
-    product_out = Column(Integer)
+    product_out = Column(BigInteger)
     log_product_out = Column(Float)
     node = relationship("OSRMNode")
 
