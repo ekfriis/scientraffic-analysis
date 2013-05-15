@@ -57,6 +57,9 @@ if __name__ == "__main__":  # pragma: nocover
     logging.basicConfig(
         level=logging.INFO if args.verbose else logging.WARNING)
 
+    logging.getLogger("requests.packages.urllib3.connectionpool").setLevel(
+        logging.WARNING)
+
     log.info("Creating DB engine")
     engine = create_engine(args.dbconnection, echo=args.echo)
 
