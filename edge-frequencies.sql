@@ -29,15 +29,17 @@ DROP TABLE edgefrequencies_bothways;
 CREATE TABLE edgefrequencies_bothways (
   edge BIGINT NOT NULL,
   freq BIGINT,
+  logfreq FLOAT,
   PRIMARY KEY (edge)
 );
 
 SELECT AddGeometryColumn('public', 'edgefrequencies_bothways', 'geom', 4326, 'LINESTRING', 2);
 
-INSERT INTO edgefrequencies_bothways (edge, freq, geom)
+INSERT INTO edgefrequencies_bothways (edge, freq, logfreq, geom)
 SELECT 
   edges.edge,
   SUM(edges.freq),
+  LOG(SUM(edges.freq)),
   geoms.geom
 FROM edgefrequencies AS edges
 INNER JOIN osrmedgegeoms AS geoms ON geoms.hash = edges.edge
