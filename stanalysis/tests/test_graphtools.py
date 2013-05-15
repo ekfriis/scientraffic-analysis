@@ -278,5 +278,43 @@ def test_output_weights():
     eq_(gt.output_weights(g, 5), [])
 
 
+def test_identify_rendudant_nodes():
+    g = igraph.Graph(directed=True)
+    # A X with two sub-Ys at the end of each top bit.
+    g.add_vertices(9)
+    # the outer rectange
+    g.add_edges([
+        (0, 1),  # input X 1
+        (8, 1),  # input X 2
+
+        (1, 2),  # left leg
+        (1, 3),  # right leg
+
+        (2, 4),  # left leg subY 1
+        (2, 5),  # left leg subY 2
+
+        (3, 6),  # right leg subY 2
+        (3, 7),  # right leg subY 2
+    ])
+
+    expected = [
+        False,   # node 0 w/o ancestors, never redundant
+        False,   # node 1 gets input from 0 and 8
+        # everything else goes through node 1
+        True,
+        True,
+        True,
+        True,
+        True,
+        True,
+        False,   # node 8 w/o ancestors, never redundant
+    ]
+    eq_(len(expected), 9)
+
+    ret = gt.identify_rendudant_nodes(g)
+    eq_(ret, 6)
+    eq_(g.vs["redundant"], expected)
+
+
 if __name__ == "__main__":
     test_collapse_degree_2_vtxs()

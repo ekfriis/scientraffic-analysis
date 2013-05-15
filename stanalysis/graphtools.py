@@ -242,3 +242,25 @@ def collapse_bidirectional_streets(graph):
     log.info("Deleting %i thru-nodes", len(thru_nodes))
     graph.delete_vertices(thru_nodes)
     return len(thru_nodes)
+
+
+def identify_rendudant_nodes(g):
+    """Flag nodes which can only be reached from a single upstream node
+
+    Returns number of nodes made redundant.
+
+    A node is redundant if it can only be reached from another node.
+
+    You need significant statistics to do this in practice, otherwise
+    you could remove nodes which also have other inputs that are
+    rare.
+
+    """
+    g.vs["redundant"] = False
+    redundant = 0
+    for vtx in g.vs.select(_indegree_eq=1):
+        pre = vtx.predecessors()[0]
+        if pre.outdegree() > 1:
+            redundant += 1
+            vtx["redundant"] = True
+    return redundant

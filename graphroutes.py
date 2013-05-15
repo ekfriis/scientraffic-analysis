@@ -57,6 +57,8 @@ def main(args):
         log.info("Removed %i tails", snipped)
         loners = graphtools.delete_degree_0_vtxs(g)
         log.info("Removed %i loner-nodes (should be zero)", loners)
+        redundancies = graphtools.identify_rendudant_nodes(g)
+        log.info("Marked %i nodes as redundant", redundancies)
 
     log.info("Saving graph to %s", args.output)
     g.save(args.output)
