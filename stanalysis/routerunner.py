@@ -68,6 +68,20 @@ def generate_random_choices_exponential(N, alist):
         yield output
 
 
+def generate_forward_backward_pairs(iterable):
+    """ Takes an iterable of pairs, and yields it both forward and backwards.
+
+    Example:
+
+    >>> list(generate_forward_backward_pairs(
+    ...     [(1, 2), (3, 4)]))
+    [(1, 2), (2, 1), (3, 4), (4, 3)]
+    """
+    for a, b in iterable:
+        yield (a, b)
+        yield (b, a)
+
+
 def build_osrm_url(coords, host, port):
     """Build an OSRM query URL
 

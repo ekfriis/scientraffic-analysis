@@ -96,8 +96,11 @@ if __name__ == "__main__":  # pragma: nocover
         for ichunk in range(nchunks):
             log.info("Processing %i route block %i/%i",
                      chunk_size, ichunk + 1, nchunks)
-            routes_to_run = rr.generate_random_choices_exponential(
-                chunk_size, nodes)
+            # We run each route forward and backwards to better
+            # describe the use-case for that region.
+            routes_to_run = rr.generate_forward_backward_pairs(
+                rr.generate_random_choices_exponential(
+                    chunk_size, nodes))
             commit_every = 20
             for route in executor.map(route_runner, routes_to_run):
 
