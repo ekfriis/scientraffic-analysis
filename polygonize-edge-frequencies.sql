@@ -16,7 +16,7 @@
     --from edgefrequencies_bothways a, 
     --edgefrequencies_bothways b
     --where a.edge <> b.edge
-    ----and a.freq > 1 
+    --and a.freq > 1 
     --and ST_Intersects(a.geom,b.geom)
     --group by a.edge
   --) as c
@@ -28,14 +28,14 @@
 
 --CREATE INDEX "idx_exploded_lines_tmp_geom" ON "public"."exploded_lines_tmp" USING GIST (geom);
 
-DROP TABLE edgefreqpolys;
-CREATE TABLE edgefreqpolys (
-  id SERIAL 
-);
-SELECT AddGeometryColumn('public', 'edgefreqpolys', 'geom', 4326, 'POLYGON', 2);
+--DROP TABLE edgefreqpolys;
+--CREATE TABLE edgefreqpolys (
+  --id SERIAL 
+--);
+--SELECT AddGeometryColumn('public', 'edgefreqpolys', 'geom', 4326, 'POLYGON', 2);
 
 INSERT INTO edgefreqpolys (geom)
-select (ST_Dump(p.geom)).geom as geom
+select ST_Buffer((ST_Dump(p.geom)).geom, 0) as geom
 from (select ST_Polygonize(ST_LineMerge(ST_Multi(f.geom))) as geom
     --from edgefrequencies_bothways f
     from (select e.geom AS geom from exploded_lines_tmp e) AS f
