@@ -24,4 +24,5 @@ ls tl_2011_06_tract.* | grep -v zip | xargs rm
 # Buffer 
 echo "Creating dissolved census tracts"
 echo "DROP TABLE tl_2011_06_tract_buffered;" | psql osrm osm
-echo "select aland, ogc_fid, ST_Buffer(wkb_geometry, -1E-3) INTO tl_2011_06_tract_buffered from tl_2011_06_tract where aland > 0;" | psql osrm osm
+echo "select aland, ogc_fid, ST_Buffer(wkb_geometry, -1E-3) AS geom INTO tl_2011_06_tract_buffered from tl_2011_06_tract where aland > 0;" | psql osrm osm
+echo "CREATE INDEX idx_tl_2011_06_tract_buffered  ON tl_2011_06_tract_buffered USING GIST (geom);" | psql osrm osm
