@@ -263,4 +263,6 @@ def identify_rendudant_nodes(g):
         if pre.outdegree() > 1:
             redundant += 1
             vtx["redundant"] = True
+    # travel up the chain to the first non-redundant node, if
+    # outflow > X of total, is redundant.
     return redundant
