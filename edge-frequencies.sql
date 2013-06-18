@@ -30,19 +30,22 @@ CREATE TABLE edgefrequencies_bothways (
   edge BIGINT NOT NULL,
   freq BIGINT,
   logfreq FLOAT,
+  speed FLOAT,
   PRIMARY KEY (edge)
 );
 
 SELECT AddGeometryColumn('public', 'edgefrequencies_bothways', 'geom', 4326, 'LINESTRING', 2);
 
-INSERT INTO edgefrequencies_bothways (edge, freq, logfreq, geom)
+INSERT INTO edgefrequencies_bothways (edge, freq, logfreq, speed, geom)
 SELECT 
   edges.edge,
   SUM(edges.freq),
   LOG(SUM(edges.freq)),
+  CAST(rawedge.distance AS FLOAT) / CAST(rawedge.weight AS FLOAT),
   geoms.geom
 FROM edgefrequencies AS edges
 INNER JOIN osrmedgegeoms AS geoms ON geoms.hash = edges.edge
-GROUP BY edges.edge, geoms.geom;
+INNER JOIN osrmedges AS rawedge ON rawedge.hash = edges.edge
+GROUP BY edges.edge, geoms.geom, CAST(rawedge.distance AS FLOAT) / CAST(rawedge.weight AS FLOAT);
 
 CREATE INDEX "idx_edgefrequencies_bothways_geom" ON "public"."edgefrequencies_bothways" USING GIST (geom);
